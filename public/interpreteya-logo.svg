@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Círculo externo (brillo reactor Iron Man) -->
+  <circle cx="100" cy="100" r="90" stroke="#22d3ee" stroke-width="6" fill="none" filter="url(#glow)"></circle>
+
+  <!-- Círculo interno -->
+  <circle cx="100" cy="100" r="60" stroke="#3b82f6" stroke-width="4" fill="none"></circle>
+
+  <!-- Texto central -->
+  <text x="50%" y="55%" text-anchor="middle" font-size="40" font-family="Orbitron, sans-serif" fill="#22d3ee">
+    IY
+  </text>
+
+  <!-- Definición del filtro glow -->
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"></feGaussianBlur>
+      <feMerge>
+        <feMergeNode in="blur"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
