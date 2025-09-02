@@ -212,3 +212,46 @@ kbd{
   .iy-container::before, .btn__glow, .holoEdge{ animation:none; }
   .btn-animate{ animation:none; }
 }
+
+/* ====== Bloque añadido para volumen (icono + slider) ====== */
+.volumeWrap{ display:flex; align-items:center; gap:6px; }
+.vcSlider{
+  -webkit-appearance:none; appearance:none;
+  width:100px; height:4px; border-radius:999px;
+  background:linear-gradient(90deg, var(--primary), #2a4f72);
+  outline:none; cursor:pointer;
+}
+.vcSlider::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none;
+  width:16px; height:16px; border-radius:50%;
+  background:#e6f1ff; border:2px solid #1d74a8; box-shadow:0 0 0 3px #0b2238;
+}
+.vcSlider::-moz-range-thumb{
+  width:16px; height:16px; border-radius:50%;
+  background:#e6f1ff; border:2px solid #1d74a8;
+}
+@media (max-width: 480px){
+  .vcSlider{ width:72px; height:4px; }
+}
+
+/* ➕ Ajuste: transición y modo desplegable SOLO en móvil */
+.vcSlider{ transition: width .18s ease, opacity .15s ease, transform .18s ease; }
+
+@media (max-width: 600px){
+  .volumeWrap{ position: relative; }
+  /* Oculto por defecto */
+  .volumeWrap:not(.vol-open) .vcSlider{
+    width:0;
+    opacity:0;
+    transform:scaleX(0.6);
+    margin-left:0;
+    pointer-events:none;
+  }
+  /* Visible al tocar el icono */
+  .volumeWrap.vol-open .vcSlider{
+    width:72px;   /* tamaño cómodo en móvil */
+    opacity:1;
+    transform:scaleX(1);
+    pointer-events:auto;
+  }
+}
