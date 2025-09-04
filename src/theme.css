@@ -274,3 +274,195 @@ header .brand img{
   filter: drop-shadow(0 0 6px var(--primary-2));
   animation: logoGlow 3s ease-in-out infinite alternate;
 }
+
+/* ──────────── NAV mejorado ──────────── */
+.nav-links{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.nav-links .active{
+  border-color: rgba(34,211,238,.75) !important;
+  box-shadow: 0 8px 22px rgba(34,211,238,.22), 0 0 0 1px rgba(34,211,238,.18) inset;
+}
+
+/* Menú móvil colapsable */
+.mobile-toggle{ display:none; }
+@media (max-width: 860px){
+  .mobile-toggle{ display:inline-flex; }
+  .nav-links{
+    position: absolute;
+    right:12px; left:12px; top:64px;
+    background: rgba(6,12,30,.92);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px;
+    box-shadow: var(--shadow);
+    display:none;
+    z-index: 60;
+  }
+  .nav-links.open{ display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+}
+
+/* ──────────── Variantes de botón ──────────── */
+.btn{
+  display:inline-flex; align-items:center; gap:8px;
+  line-height:1; white-space:nowrap;
+}
+.btn.icon{ padding:10px 12px; }
+.btn.chip{
+  padding:8px 12px;
+  border-radius:999px;
+  font-weight:700;
+}
+.btn.pill{
+  padding:10px 14px;
+  border-radius:999px;
+  background: linear-gradient(180deg, var(--primary-2), #0891b2);
+}
+.btn.pill:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(8,145,178,.35);
+}
+
+/* Emergencia con pulso */
+.btn.emergency{
+  background: linear-gradient(180deg, #ef4444, #b91c1c);
+  border:1px solid rgba(255,255,255,.1);
+  color:#fff;
+  animation: pulse-red 1.2s ease-in-out infinite;
+}
+@keyframes pulse-red{
+  0%{ box-shadow: 0 0 0 0 rgba(239,68,68,.55); }
+  70%{ box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+.btn.emergency:hover{
+  transform: translateY(-1px);
+}
+
+/* Tamaños opcionales */
+.btn.sm{ padding:6px 10px; font-size:12px; }
+.btn.lg{ padding:12px 18px; font-size:16px; }
+
+/* Accesibilidad: foco consistente */
+.btn:focus-visible{
+  outline: 3px solid rgba(34,211,238,.65);
+  outline-offset: 2px;
+  border-radius:12px;
+}
+
+/* ───────── Colores de alto contraste en botones ───────── */
+:root{
+  --btn-text:#eaf2ff;               /* texto claro */
+  --btn-bg-ghost: rgba(255,255,255,.04);
+  --btn-bg-ghost-hover: rgba(255,255,255,.07);
+  --btn-border: rgba(255,255,255,.14);
+}
+
+/* Base botón/links en nav */
+.nav-links .btn,
+.nav-links .btn:link,
+.nav-links .btn:visited,
+.btn,
+.btn:link,
+.btn:visited{
+  color: var(--btn-text) !important;
+  text-decoration: none !important;           /* 🔧 quita subrayado */
+}
+
+/* Ícono alineado y sin pérdida de contraste */
+.btn svg{
+  transform: translateY(1px);
+  opacity: .95;
+}
+
+/* Ghost/secondary visibles sobre fondo oscuro */
+.btn.secondary{
+  background: var(--btn-bg-ghost);
+  border: 1px solid var(--btn-border);
+}
+.btn.secondary:hover{
+  background: var(--btn-bg-ghost-hover);
+  border-color: rgba(34,211,238,.35);
+  box-shadow: 0 8px 22px rgba(34,211,238,.20);
+}
+
+/* Chip y Pill ya definidos: solo asegurar texto brillante */
+.btn.chip, .btn.pill{ color: var(--btn-text) !important; }
+
+/* Estado activo claramente visible */
+.nav-links .active{
+  border-color: rgba(34,211,238,.75) !important;
+  box-shadow: 0 8px 22px rgba(34,211,238,.22), 0 0 0 1px rgba(34,211,238,.18) inset;
+}
+
+/* Emergencia con pulso y contraste alto */
+.btn.emergency{
+  background: linear-gradient(180deg, #ef4444, #b91c1c);
+  border:1px solid rgba(255,255,255,.12);
+  color:#fff !important;
+  animation: pulse-red 1.2s ease-in-out infinite;
+}
+@keyframes pulse-red{
+  0%{ box-shadow: 0 0 0 0 rgba(239,68,68,.55); }
+  70%{ box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+.btn.emergency:hover{ transform: translateY(-1px); }
+
+/* Tamaños opcionales y foco accesible */
+.btn{ display:inline-flex; align-items:center; gap:8px; line-height:1; white-space:nowrap; }
+.btn.icon{ padding:10px 12px; }
+.btn.chip{ padding:8px 12px; border-radius:999px; font-weight:700; }
+.btn.pill{ padding:10px 14px; border-radius:999px; background: linear-gradient(180deg, var(--primary-2), #0891b2); }
+.btn.sm{ padding:6px 10px; font-size:12px; }
+.btn.lg{ padding:12px 18px; font-size:16px; }
+.btn:focus-visible{ outline: 3px solid rgba(34,211,238,.65); outline-offset: 2px; border-radius:12px; }
+
+/* Nav layout + menú móvil */
+.nav-links{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.mobile-toggle{ display:none; }
+@media (max-width: 860px){
+  .mobile-toggle{ display:inline-flex; }
+  .nav-links{
+    position: absolute;
+    right:12px; left:12px; top:64px;
+    background: rgba(6,12,30,.92);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px;
+    box-shadow: var(--shadow);
+    display:none;
+    z-index: 60;
+  }
+  .nav-links.open{ display:grid; grid-template-columns: 1fr; gap:8px; }
+  .nav-links .btn{ width:100%; justify-content:flex-start; } /* full ancho móvil */
+}
+
+/* ───────────── Barra inferior fija (móvil) ───────────── */
+.bottom-nav{
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  background: rgba(6,12,30,.88);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  display: none;                    /* solo en móvil */
+  z-index: 70;
+}
+.bn-item{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:6px; padding:8px 6px; border-radius:12px;
+  color: var(--btn-text); text-decoration: none;
+  font-weight:700; line-height:1;
+}
+.bn-item span{ font-size:11px; opacity:.95; }
+.bn-item svg{ font-size:18px; opacity:.95; }
+.bn-item:hover{ background: rgba(255,255,255,.06); }
+.bn-item.active{ outline: 2px solid rgba(34,211,238,.35); outline-offset: -2px; }
+.bn-item.danger{ background: linear-gradient(180deg, #ef4444, #b91c1c); color:#fff; }
+@media (max-width: 860px){
+  .bottom-nav{ display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; }
+}

@@ -1,0 +1,9 @@
+/* src/pages/home2.css */
+/* Reutiliza todo el estilo base */
+@import "./home.css";
+
+/* Ajustes sutiles para la segunda página */
+.theme-cyber .h2.center { text-align: center; }
+
+/* pequeño margen superior para diferenciar del Home */
+.container.main-pad { padding-top: clamp(12px, 3vw, 24px); }
