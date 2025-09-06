@@ -29,7 +29,7 @@ body{
   margin:0;
   font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
   background:var(--bg);
-  color:var(--text);
+  color:#e6f1ff; /* mejor contraste en fondo oscuro */
 }
 .container{ max-width:var(--container); margin:0 auto; padding:0 16px; }
 .mb-4{margin-bottom:1rem} .mb-6{margin-bottom:1.5rem} .mb-8{margin-bottom:2rem} .mb-16{margin-bottom:4rem}
@@ -346,3 +346,227 @@ textarea:focus-visible{
   top:max(10px, env(safe-area-inset-top));
   right:max(10px, env(safe-area-inset-right));
 }
+
+/* ===== Hero layout elegante y responsivo ===== */
+.hero-flex{
+  display:grid;
+  grid-template-columns: 1.1fr .9fr;
+  align-items:center;
+  gap: clamp(16px, 2.2vw, 28px);
+}
+
+.img-col{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+/* Marco del video con tamaño controlado */
+.hero-video-wrap{
+  width: clamp(260px, 44vw, 520px);     /* ✅ pequeño en móvil, medio en desktop */
+  aspect-ratio: 16 / 9;                 /* ✅ mantiene proporción */
+  border-radius: 16px;
+  padding: 10px;
+  background:
+    radial-gradient(120% 120% at 10% 10%, rgba(34,211,238,.15), transparent 60%),
+    radial-gradient(120% 120% at 90% 90%, rgba(59,130,246,.15), transparent 60%),
+    rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.45),
+    0 0 20px rgba(34,211,238,.15),
+    inset 0 0 0 1px rgba(255,255,255,.04);
+  overflow:hidden;                      /* ✅ bordes redondeados visibles */
+}
+
+.hero-video{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;                    /* ✅ se recorta elegante */
+  display:block;
+  border-radius: 12px;
+}
+
+/* Tipografía del hero más limpia y que no se “gigantice” */
+.hero-title{
+  font-size: clamp(22px, 3.2vw, 36px);
+  line-height: 1.15;
+  margin: 0 0 10px;
+}
+
+.hero-sub{
+  font-size: clamp(14px, 1.5vw, 16px);
+  line-height: 1.6;
+  opacity: .9;
+}
+
+/* Botones: separar y equilibrar */
+.hero-ctas{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* ===== Responsivo ===== */
+@media (max-width: 980px){
+  .hero-flex{
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .hero-ctas{ justify-content:center; }
+  .hero-video-wrap{
+    width: clamp(260px, 92vw, 560px);   /* ✅ más ancho en móvil, sigue elegante */
+  }
+}
+
+/* Accesibilidad: si el usuario prefiere menos animación, evita repeticiones rápidas */
+@media (prefers-reduced-motion: reduce){
+  .hero-video{ animation: none !important; }
+}
+
+/* ===== Controles a la DERECHA y en COLUMNA (no tapan subtítulos) ===== */
+.videoControls.right{
+  position:absolute;
+  top:50%;
+  right:10px;
+  bottom:auto;
+  transform: translateY(-50%);
+  /* si aún existe .videoControls { bottom:10px } este selector más específico lo sobreescribe */
+}
+
+.controlBar.vertical{
+  display:flex;
+  flex-direction: column;    /* botones apilados */
+  align-items:center;
+  gap:12px;
+  padding:10px;
+  border-radius:12px;
+  background: rgba(8,14,28,.55);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow: 0 8px 20px rgba(0,0,0,.35);
+  backdrop-filter: blur(8px);
+}
+
+/* Grupo de volumen en columna */
+.volumeWrap.column{
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  gap:10px;
+}
+
+/* Caja del slider vertical (contiene el range rotado) */
+.vertSliderBox{
+  width:26px;                 /* grosor visual del tubo */
+  height:130px;               /* alto del slider */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:visible;
+}
+
+/* Slider vertical (range rotado para compatibilidad) */
+.vcSlider.vertical{
+  width:130px;                /* será la ALTURA real tras rotación */
+  height:6px;
+  transform: rotate(-90deg);
+  transform-origin:center;
+  border:none;
+  outline:none;
+  border-radius:999px;
+  background: linear-gradient(90deg, #22d3ee, #3b82f6);
+}
+.vcSlider.vertical::-webkit-slider-runnable-track{ height:6px; border-radius:999px; background: transparent; }
+.vcSlider.vertical::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:14px; height:14px; border-radius:50%;
+  background:#fff; border:1px solid rgba(0,0,0,.25);
+  margin-top:-4px;
+}
+.vcSlider.vertical::-moz-range-track{ height:6px; border-radius:999px; background: transparent; }
+.vcSlider.vertical::-moz-range-thumb{
+  width:14px; height:14px; border-radius:50%;
+  background:#fff; border:1px solid rgba(0,0,0,.25);
+}
+
+/* Botón elegante (reutiliza tu .vcBtn base si ya existe) */
+.vcBtn{
+  min-width:36px;
+  height:36px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.08);
+  color:#e9f2ff;
+  display:grid; place-items:center;
+  cursor:pointer;
+  transition: transform .12s ease, background .12s ease;
+}
+.vcBtn:hover{ background: rgba(255,255,255,.14); transform: translateY(-1px); }
+.vcBtn:active{ transform: translateY(0); }
+
+/* En móviles: el slider aparece al tocar el icono de volumen */
+@media (max-width: 600px){
+  .vertSliderBox{ display:none; }
+  .volumeWrap.column.vol-open .vertSliderBox{ display:flex; }
+}
+
+/* Fullscreen: conserva posición y safe-area */
+.hero-video-wrap:fullscreen .videoControls.right,
+.hero-video-wrap:-webkit-full-screen .videoControls.right{
+  right:max(12px, env(safe-area-inset-right));
+  top:50%;
+  transform: translateY(-50%);
+}
+/* === Volumen ULTRA compacto (solo desktop/tablet) === */
+@media (min-width: 980px){
+  .videoControls.right{ right:4px; }          /* un poco más al borde */
+
+  .controlBar.vertical{
+    gap:6px;
+    padding:5px;                               /* menos acolchado */
+    border-radius:9px;
+  }
+
+  .vcBtn{
+    min-width:26px;                            /* antes 30–36px */
+    height:26px;
+    border-radius:7px;
+  }
+  .vcBtn i{ font-size:11px; }                  /* iconos más chicos */
+
+  .vertSliderBox{
+    width:16px;                                /* tubo más delgado */
+    height:72px;                               /* antes 96–130px */
+  }
+  .vcSlider.vertical{
+    width:72px;                                /* alto real tras rotar */
+    height:3px;                                /* grosor del track */
+  }
+  .vcSlider.vertical::-webkit-slider-thumb{
+    width:10px; height:10px; margin-top:-3.5px; /* pulgar más pequeño */
+  }
+  .vcSlider.vertical::-moz-range-thumb{
+    width:10px; height:10px;
+  }
+}
+
+/* Al pasar el mouse, crece un poco para agarrar mejor */
+@media (min-width: 980px){
+  .videoControls.right .controlBar.vertical:hover .vcSlider.vertical{ height:4px; }
+  .videoControls.right .controlBar.vertical:hover .vcSlider.vertical::-webkit-slider-thumb{
+    width:12px; height:12px; margin-top:-4px;
+  }
+  .videoControls.right .controlBar.vertical:hover .vcSlider.vertical::-moz-range-thumb{
+    width:12px; height:12px;
+  }
+}
+
+/* Móvil: mantenemos tamaño táctil (no lo hacemos más chico) */
+@media (max-width: 600px){
+  .vcBtn{ min-width:32px; height:32px; }       /* accesible para dedo */
+  .volumeWrap.column.vol-open .vertSliderBox{ height:84px; }
+  .volumeWrap.column.vol-open .vcSlider.vertical{ width:84px; height:4px; }
+}
+
+

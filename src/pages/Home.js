@@ -1,5 +1,5 @@
 // src/pages/Home.js
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./home.css";
 
@@ -13,13 +13,24 @@ export default function Home() {
   const [regTab, setRegTab] = useState("user"); // "user" | "interpreter"
   const [ubicacion, setUbicacion] = useState("Santiago, Chile");
 
+  // ===== Video state / refs =====
+  const videoRef = useRef(null);
+  const trackRef = useRef(null);
+  const wrapRef  = useRef(null);
+
+  const [isMuted, setIsMuted] = useState(true);
+  const [volume, setVolume]   = useState(0.6);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [volOpen, setVolOpen] = useState(false); // muestra el slider en móvil
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [captionsOn, setCaptionsOn] = useState(true);
+
   // ===== Handlers =====
   const abrirLogin = useCallback(() => {
     setShowRegister(false);
     setShowLogin(true);
   }, []);
 
-  // 🔹 ÚNICO handler: abre el MISMO modal con formularios completos
   const abrirRegister = useCallback((tab = "user") => {
     setRegTab(tab);
     setShowLogin(false);
@@ -41,21 +52,159 @@ export default function Home() {
     return () => (document.body.style.overflow = prev);
   }, [hayModal]);
 
-  // Cerrar con ESC
+  // Cerrar con ESC (para modales)
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && cerrarTodo();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [cerrarTodo]);
 
-  // 🧠 Abrir modal de Registro si venimos desde la navbar con state
+  // Abrir modal de Registro si venimos desde la navbar con state
   useEffect(() => {
     if (location?.state?.openRegister) {
       abrirRegister(location?.state?.regTab || "user");
-      // Limpia el state para que no se re-abra al recargar
       navigate(".", { replace: true, state: {} });
     }
   }, [location, abrirRegister, navigate]);
+
+  // Inicializar video + detectar cambios de fullscreen + play/pause listeners
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    v.muted = true;            // autoplay en móvil
+    v.volume = volume;
+
+    const onFsChange = () => {
+      const fs = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+      setIsFullscreen(!!fs);
+    };
+
+    const onPlay  = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+
+    v.addEventListener("play", onPlay);
+    v.addEventListener("pause", onPause);
+    document.addEventListener("fullscreenchange", onFsChange);
+    document.addEventListener("webkitfullscreenchange", onFsChange);
+    document.addEventListener("MSFullscreenChange", onFsChange);
+
+    return () => {
+      v.removeEventListener("play", onPlay);
+      v.removeEventListener("pause", onPause);
+      document.removeEventListener("fullscreenchange", onFsChange);
+      document.removeEventListener("webkitfullscreenchange", onFsChange);
+      document.removeEventListener("MSFullscreenChange", onFsChange);
+    };
+  }, [volume]);
+
+  // Sincronizar subtítulos con estado
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    try {
+      // Cuando hay <track>, su mode puede ser 'showing' | 'hidden'
+      track.mode = captionsOn ? "showing" : "hidden";
+    } catch {}
+  }, [captionsOn]);
+
+  // ===== Controles de video =====
+  const toggleMute = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    const next = !v.muted;
+    v.muted = next;
+    setIsMuted(next);
+    // Si reactivas sonido y volumen está en 0, sube a un valor cómodo
+    if (!next && v.volume === 0) {
+      v.volume = 0.5;
+      setVolume(0.5);
+    }
+    // En móvil: al tocar el icono de volumen, abre/cierra el slider
+    setVolOpen((s) => !s);
+  };
+
+  const changeVolume = (valOrEvent) => {
+    const val = typeof valOrEvent === "number" ? valOrEvent : Number(valOrEvent.target.value);
+    const v = videoRef.current;
+    if (!v) return;
+    const clamped = Math.max(0, Math.min(1, val));
+    v.volume = clamped;
+    setVolume(clamped);
+    if (clamped > 0 && v.muted) {
+      v.muted = false;
+      setIsMuted(false);
+    }
+    if (clamped === 0 && !v.muted) {
+      v.muted = true;
+      setIsMuted(true);
+    }
+  };
+
+  const toggleFullscreen = async () => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const d = document;
+    const isFs = d.fullscreenElement || d.webkitFullscreenElement || d.msFullscreenElement;
+    try {
+      if (!isFs) {
+        if (el.requestFullscreen) await el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if (el.msRequestFullscreen) el.msRequestFullscreen();
+      } else {
+        if (d.exitFullscreen) await d.exitFullscreen();
+        else if (d.webkitExitFullscreen) d.webkitExitFullscreen();
+        else if (d.msExitFullscreen) d.msExitFullscreen();
+      }
+    } catch {}
+  };
+
+  const togglePlayPause = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) v.play();
+    else v.pause();
+  };
+
+  const toggleCaptions = () => setCaptionsOn((s) => !s);
+
+  // Atajos de teclado accesibles cuando el contenedor tiene foco
+  const handleKeyDown = (e) => {
+    // Evita scroll con barra espaciadora
+    if (e.key === " ") e.preventDefault();
+
+    switch (e.key.toLowerCase()) {
+      case " ":
+        togglePlayPause();
+        break;
+      case "m":
+        toggleMute();
+        break;
+      case "f":
+        toggleFullscreen();
+        break;
+      case "c":
+        toggleCaptions();
+        break;
+      case "arrowup":
+        changeVolume(volume + 0.05);
+        break;
+      case "arrowdown":
+        changeVolume(volume - 0.05);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Icono según nivel de volumen
+  const volumeIcon = isMuted || volume === 0
+    ? "fa-volume-mute"
+    : volume < 0.5
+      ? "fa-volume-down"
+      : "fa-volume-up";
+
+  const volumePct = Math.round((isMuted ? 0 : volume) * 100);
 
   return (
     <div className="theme-cyber">
@@ -71,8 +220,6 @@ export default function Home() {
               <button type="button" className="ubereats-btn-secondary neon-btn" onClick={abrirLogin}>
                 Ingresar
               </button>
-
-              {/* ⬇️ Este botón abre el MISMO modal con tabs (Usuario / Intérprete) */}
               <button
                 type="button"
                 className="ubereats-btn neon-btn-strong"
@@ -113,18 +260,145 @@ export default function Home() {
                 >
                   <i className="fas fa-calendar-alt" aria-hidden="true" /> Agendar
                 </button>
-                {/* ✅ Botón "Registro 2" eliminado */}
               </div>
             </div>
 
             <div className="hero-col img-col">
-              <img
-                src="/logo-bienvenido.mp4"
-                alt="Personas comunicándose con lengua de señas"
-                className="hero-img neon-img"
-                loading="lazy"
-                decoding="async"
-              />
+              {/* Video con controles */}
+              <div
+                className="hero-video-wrap"
+                ref={wrapRef}
+                style={{ position: "relative" }}
+                role="region"
+                aria-label="Reproductor de video de bienvenida"
+                tabIndex={0}
+                onKeyDown={handleKeyDown}
+              >
+                <video
+                  className="hero-video"
+                  ref={videoRef}
+                  src="/logo-bienvenido.mp4"
+                  preload="metadata"
+                  poster="/assets/interpreteya-logo1.jpg"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  aria-label="Video de bienvenida InterpreteYa"
+                >
+                  {/* Subtítulos: coloca subtitles-es.vtt en /public */}
+                  <track
+                    ref={trackRef}
+                    kind="captions"
+                    srcLang="es"
+                    label="Español"
+                    src="/subtitles-es.vtt"
+                    default
+                  />
+                  Tu navegador no soporta video HTML5.
+                </video>
+
+                {/* Anuncio accesible del volumen (no visible) */}
+                <span
+                  aria-live="polite"
+                  style={{
+                    position: "absolute",
+                    width: 1,
+                    height: 1,
+                    margin: -1,
+                    padding: 0,
+                    overflow: "hidden",
+                    clip: "rect(0 0 0 0)",
+                    whiteSpace: "nowrap",
+                    border: 0,
+                  }}
+                >
+                  Volumen {volumePct}%
+                </span>
+
+                {/* --- Controles a la DERECHA, en columna, para no tapar subtítulos --- */}
+                <div className="videoControls right">
+                  <div
+                    className="controlBar vertical"
+                    role="group"
+                    aria-label="Controles de video"
+                    onMouseEnter={() => setVolOpen(true)}
+                    onMouseLeave={() => setVolOpen(false)}
+                  >
+                    {/* Play / Pause */}
+                    <button
+                      type="button"
+                      className="vcBtn"
+                      onClick={togglePlayPause}
+                      aria-label={isPlaying ? "Pausar video" : "Reproducir video"}
+                      title={isPlaying ? "Pausar" : "Reproducir"}
+                      aria-pressed={isPlaying}
+                    >
+                      <i className={`fas ${isPlaying ? "fa-pause" : "fa-play"}`} aria-hidden="true" />
+                    </button>
+
+                    {/* Subtítulos (CC) */}
+                    <button
+                      type="button"
+                      className="vcBtn"
+                      onClick={toggleCaptions}
+                      aria-label={captionsOn ? "Ocultar subtítulos" : "Mostrar subtítulos"}
+                      title={captionsOn ? "Subtítulos: ON" : "Subtítulos: OFF"}
+                      aria-pressed={captionsOn}
+                    >
+                      <i className="fas fa-closed-captioning" aria-hidden="true" />
+                    </button>
+
+                    {/* Volumen */}
+                    <div className={`volumeWrap column ${volOpen ? "vol-open" : ""}`}>
+                      <button
+                        type="button"
+                        className="vcBtn"
+                        onClick={toggleMute}
+                        aria-label={isMuted ? "Activar sonido" : "Silenciar"}
+                        title={isMuted ? "Activar sonido" : "Silenciar"}
+                        aria-pressed={!isMuted}
+                      >
+                        <i className={`fas ${volumeIcon}`} aria-hidden="true" />
+                      </button>
+
+                      {/* Slider vertical */}
+                      <div className={`vertSliderBox ${volOpen ? "show" : ""}`}>
+                        <input
+                          className="vcSlider vertical"
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={isMuted ? 0 : volume}
+                          onChange={(e) => changeVolume(e)}
+                          onFocus={() => setVolOpen(true)}
+                          onBlur={() => setVolOpen(false)}
+                          aria-label="Volumen"
+                          aria-valuemin={0}
+                          aria-valuemax={1}
+                          aria-valuenow={isMuted ? 0 : Number(volume.toFixed(2))}
+                          aria-valuetext={`${volumePct}%`}
+                          title="Volumen"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Pantalla completa */}
+                    <button
+                      type="button"
+                      className="vcBtn"
+                      onClick={toggleFullscreen}
+                      aria-label={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+                      title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+                      aria-pressed={isFullscreen}
+                    >
+                      <i className={`fas ${isFullscreen ? "fa-compress" : "fa-expand"}`} aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+                {/* --- /Controles --- */}
+              </div>
             </div>
           </div>
         </section>
@@ -163,7 +437,11 @@ export default function Home() {
 
         {/* Botón "Vida Intérprete" */}
         <div className="center mb-16">
-          <button type="button" className="ubereats-btn neon-btn-strong" onClick={() => navigate("/home2")}>
+          <button
+            type="button"
+            className="ubereats-btn neon-btn-strong"
+            onClick={() => navigate("/home2")}
+          >
             🤟🏼 Vida Intérprete ➜
           </button>
         </div>
@@ -237,7 +515,7 @@ export default function Home() {
               </button>
             </div>
 
-            {/* 🔹 Tabs: no hay página de “tipo-usuario”, todo está aquí */}
+            {/* Tabs */}
             <div className="tabs" role="tablist" aria-label="Tipo de registro">
               <button
                 type="button"
@@ -264,9 +542,7 @@ export default function Home() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  // 👉 Si NO quieres ir a otra página, deja así (solo cierra el modal):
                   cerrarTodo();
-                  // navigate("/registro-usuario"); // Si quieres ir a la página, descomenta.
                 }}
               >
                 <label className="label">Nombre Completo</label>
@@ -286,9 +562,7 @@ export default function Home() {
 
                 <label className="checkbox">
                   <input type="checkbox" required /> Acepto los{" "}
-                  <a href="#" className="link-blue neon-link">
-                    Términos y Condiciones
-                  </a>
+                  <a href="#" className="link-blue neon-link">Términos y Condiciones</a>
                 </label>
 
                 <button type="submit" className="btn-blue block mt-12 neon-btn-strong">
@@ -310,9 +584,7 @@ export default function Home() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  // 👉 Si NO quieres ir a otra página, deja así (solo cierra el modal):
                   cerrarTodo();
-                  // navigate("/registro-interprete"); // Si quieres ir a la página, descomenta.
                 }}
               >
                 <label className="label">Nombre Completo</label>
@@ -335,9 +607,7 @@ export default function Home() {
 
                 <label className="checkbox">
                   <input type="checkbox" required /> Acepto los{" "}
-                  <a href="#" className="link-blue neon-link">
-                    Términos y Condiciones
-                  </a>
+                  <a href="#" className="link-blue neon-link">Términos y Condiciones</a>
                 </label>
 
                 <button type="submit" className="btn-purple block mt-12 neon-btn-strong">
