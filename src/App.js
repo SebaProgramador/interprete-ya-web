@@ -5,16 +5,27 @@ import { auth, db } from "./firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import "./theme.css";
-import { FaUserPlus, FaRegNewspaper, FaAmbulance, FaUsers, FaCalendarAlt, FaVideo, FaSignInAlt, FaSignOutAlt, FaUser, FaBars } from "react-icons/fa";
+import {
+  FaUserPlus,
+  FaRegNewspaper,
+  FaAmbulance,
+  FaUsers,
+  FaCalendarAlt,
+  FaVideo,
+  FaSignInAlt,
+  FaSignOutAlt,
+  FaUser,
+  FaBars
+} from "react-icons/fa";
 
-/* UI común */
+/* UI común (si no los usas, puedes comentar estas líneas) */
 import { Protected } from "./components/ui";
 import DevGerenteSwitch from "./components/DevGerenteSwitch";
 
 /* Páginas */
 import Home from "./pages/Home";
 import Home2 from "./pages/Home2";
-import TipoUsuario from "./pages/TipoUsuario";
+// import TipoUsuario from "./pages/TipoUsuario"; // ❌ Eliminado
 import Login from "./pages/Login";
 import RegistroUsuario from "./pages/RegistroUsuario";
 import RegistroInterprete from "./pages/RegistroInterprete";
@@ -33,10 +44,10 @@ import Intro from "./pages/Intro";
 import LoginGerente from "./pages/LoginGerente";
 import CuentaPendiente from "./pages/CuentaPendiente";
 
-/* Hook de rol */
+/* Hook de rol (si no lo tienes, reemplázalo por tu lógica actual) */
 import useUserRole from "./hooks/useUserRole";
 
-/* Placeholders */
+/* Placeholders simples */
 const Page = ({ title, children }) => (
   <div className="container">
     <div className="card"><h2>{title}</h2>{children}</div>
@@ -92,7 +103,7 @@ export default function App() {
   return (
     <>
       <header className="sticky">
-        <div className="container header-row" style={{justifyContent:"space-between"}}>
+        <div className="container header-row" style={{ justifyContent: "space-between" }}>
           <Link to="/" className="brand logoWrap" onClick={() => setMenuOpen(false)}>
             <img src="/interpreteya-logo.png" alt="Intérprete Ya" width="36" height="36" />
             <span>PRONTO....</span>
@@ -108,41 +119,55 @@ export default function App() {
           </button>
 
           <nav className={`nav-links ${menuOpen ? "open" : ""}`} onClick={() => setMenuOpen(false)}>
-            <NavLink to="/tipo-usuario" className={({isActive}) => `btn secondary chip ${isActive ? "active" : ""}`}>
+            {/* ✅ Registro: abre el modal del Home usando state */}
+            <NavLink
+              to="/"
+              state={{ openRegister: true, regTab: "user" }}
+              className={({ isActive }) => `btn secondary chip ${isActive ? "active" : ""}`}
+            >
               <FaUserPlus /> Registro
             </NavLink>
 
-            <NavLink to="/noticias" className={({isActive}) => `btn secondary chip ${isActive ? "active" : ""}`}>
+            <NavLink
+              to="/noticias"
+              className={({ isActive }) => `btn secondary chip ${isActive ? "active" : ""}`}
+            >
               <FaRegNewspaper /> Noticias
             </NavLink>
 
-            <NavLink to="/emergencia" className={({isActive}) => `btn emergency ${isActive ? "active" : ""}`}>
+            <NavLink
+              to="/emergencia"
+              className={({ isActive }) => `btn emergency ${isActive ? "active" : ""}`}
+            >
               <FaAmbulance /> Emergencia 24/7
             </NavLink>
 
-            <NavLink to="/interpretes" className={({isActive}) => `btn secondary chip ${isActive ? "active" : ""}`}>
+            <NavLink
+              to="/interpretes"
+              className={({ isActive }) => `btn secondary chip ${isActive ? "active" : ""}`}
+            >
               <FaUsers /> Intérpretes
             </NavLink>
 
             {user && userDoc?.aprobado === true && (
               <>
-                <NavLink to="/solicitar" className={({isActive}) => `btn pill ${isActive ? "active" : ""}`}>
+                <NavLink to="/solicitar" className={({ isActive }) => `btn pill ${isActive ? "active" : ""}`}>
                   <FaUsers /> Solicitar
                 </NavLink>
-                <NavLink to="/agendar" className={({isActive}) => `btn pill ${isActive ? "active" : ""}`}>
+                <NavLink to="/agendar" className={({ isActive }) => `btn pill ${isActive ? "active" : ""}`}>
                   <FaCalendarAlt /> Agendar
                 </NavLink>
-                <NavLink to="/videollamada" className={({isActive}) => `btn pill ${isActive ? "active" : ""}`}>
+                <NavLink to="/videollamada" className={({ isActive }) => `btn pill ${isActive ? "active" : ""}`}>
                   <FaVideo /> Videollamada
                 </NavLink>
-                <NavLink to="/mis-reservas" className={({isActive}) => `btn secondary chip ${isActive ? "active" : ""}`}>
+                <NavLink to="/mis-reservas" className={({ isActive }) => `btn secondary chip ${isActive ? "active" : ""}`}>
                   Mis Reservas
                 </NavLink>
               </>
             )}
 
             {role === "gerente" && (
-              <NavLink to="/gerente" className={({isActive}) => `btn secondary chip ${isActive ? "active" : ""}`}>
+              <NavLink to="/gerente" className={({ isActive }) => `btn secondary chip ${isActive ? "active" : ""}`}>
                 Gerente
               </NavLink>
             )}
@@ -172,7 +197,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/home2" element={<Home2 />} />
         <Route path="/intro" element={<Intro />} />
-        <Route path="/tipo-usuario" element={<TipoUsuario />} />
+        {/* <Route path="/tipo-usuario" element={<TipoUsuario />} /> */} {/* ❌ Eliminado */}
         <Route path="/registro-usuario" element={<RegistroUsuario />} />
         <Route path="/registro-interprete" element={<RegistroInterprete />} />
         <Route path="/login" element={<Login />} />
@@ -203,47 +228,52 @@ export default function App() {
         />
       </Routes>
 
-      {/* ───────────────────────── Bottom-Nav (móvil) ───────────────────────── */}
+      {/* ───── Bottom-Nav (móvil) ───── */}
       <nav className="bottom-nav">
         {user && userDoc?.aprobado === true ? (
           <>
-            <NavLink to="/solicitar" className={({isActive}) => `bn-item ${isActive ? "active" : ""}`}>
+            <NavLink to="/solicitar" className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}>
               <FaUsers /><span>Solicitar</span>
             </NavLink>
-            <NavLink to="/emergencia" className={({isActive}) => `bn-item danger ${isActive ? "active" : ""}`}>
+            <NavLink to="/emergencia" className={({ isActive }) => `bn-item danger ${isActive ? "active" : ""}`}>
               <FaAmbulance /><span>Emergencia</span>
             </NavLink>
-            <NavLink to="/videollamada" className={({isActive}) => `bn-item ${isActive ? "active" : ""}`}>
+            <NavLink to="/videollamada" className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}>
               <FaVideo /><span>Video</span>
             </NavLink>
-            <NavLink to="/mis-reservas" className={({isActive}) => `bn-item ${isActive ? "active" : ""}`}>
+            <NavLink to="/mis-reservas" className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}>
               <FaCalendarAlt /><span>Reservas</span>
             </NavLink>
           </>
         ) : (
           <>
-            <NavLink to="/tipo-usuario" className={({isActive}) => `bn-item ${isActive ? "active" : ""}`}>
+            {/* ✅ Registro abre el modal del Home */}
+            <NavLink
+              to="/"
+              state={{ openRegister: true, regTab: "user" }}
+              className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}
+            >
               <FaUserPlus /><span>Registro</span>
             </NavLink>
-            <NavLink to="/emergencia" className={({isActive}) => `bn-item danger ${isActive ? "active" : ""}`}>
+            <NavLink to="/emergencia" className={({ isActive }) => `bn-item danger ${isActive ? "active" : ""}`}>
               <FaAmbulance /><span>Emergencia</span>
             </NavLink>
-            <NavLink to="/interpretes" className={({isActive}) => `bn-item ${isActive ? "active" : ""}`}>
+            <NavLink to="/interpretes" className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}>
               <FaUsers /><span>Intérpretes</span>
             </NavLink>
             {!user ? (
-              <NavLink to="/login" className={({isActive}) => `bn-item ${isActive ? "active" : ""}`}>
+              <NavLink to="/login" className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}>
                 <FaSignInAlt /><span>Ingresar</span>
               </NavLink>
             ) : (
-              <NavLink to="/videollamada" className={({isActive}) => `bn-item ${isActive ? "active" : ""}`}>
+              <NavLink to="/videollamada" className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}>
                 <FaVideo /><span>Video</span>
               </NavLink>
             )}
           </>
         )}
       </nav>
-      {/* ─────────────────────── Fin Bottom-Nav (móvil) ─────────────────────── */}
+      {/* ─── Fin Bottom-Nav ─── */}
 
       <footer className="container" style={{ opacity: .8 }}>
         <div className="badge">© {new Date().getFullYear()} Intérprete Ya — interpreteya.cl</div>
