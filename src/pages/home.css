@@ -38,7 +38,7 @@ body{
 .mt-10{margin-top:2.5rem} .mt-12{margin-top:3rem} .mt-16{margin-top:4rem}
 
 /* ===== Accesibilidad (focus) ===== */
-a:focus-visible,
+ a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible{
@@ -379,12 +379,13 @@ textarea:focus-visible{
   overflow:hidden;                      /* ✅ bordes redondeados visibles */
 }
 
-.hero-video{
+.hero-video {
   width: 100%;
   height: 100%;
-  object-fit: cover;                    /* ✅ se recorta elegante */
-  display:block;
+  object-fit: contain;   /* antes estaba cover → ahora se adapta sin recorte */
+  display: block;
   border-radius: 12px;
+  background: #000;      /* para que en espacios vacíos se vea negro elegante */
 }
 
 /* Tipografía del hero más limpia y que no se “gigantice” */
@@ -568,5 +569,3 @@ textarea:focus-visible{
   .volumeWrap.column.vol-open .vertSliderBox{ height:84px; }
   .volumeWrap.column.vol-open .vcSlider.vertical{ width:84px; height:4px; }
 }
-
-

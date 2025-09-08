@@ -19,7 +19,11 @@ export default function Home() {
   const wrapRef  = useRef(null);
 
   const [isMuted, setIsMuted] = useState(true);
-  const [volume, setVolume]   = useState(0.6);
+  const [volume, setVolume]   = useState(() => {
+    // recuerda el volumen del usuario
+    const v = localStorage.getItem("iy_vol");
+    return v !== null ? Math.max(0, Math.min(1, Number(v))) : 0.6;
+  });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [volOpen, setVolOpen] = useState(false); // muestra el slider en móvil
   const [isPlaying, setIsPlaying] = useState(true);
@@ -59,7 +63,7 @@ export default function Home() {
     return () => window.removeEventListener("keydown", onKey);
   }, [cerrarTodo]);
 
-  // Abrir modal de Registro si venimos desde la navbar con state
+  // Abrir modal de Registro si venimos desde otra ruta con state
   useEffect(() => {
     if (location?.state?.openRegister) {
       abrirRegister(location?.state?.regTab || "user");
@@ -67,12 +71,16 @@ export default function Home() {
     }
   }, [location, abrirRegister, navigate]);
 
-  // Inicializar video + detectar cambios de fullscreen + play/pause listeners
+  // Inicializar video + listeners (fullscreen, play/pause, doble-tap, contextmenu)
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
 
-    v.muted = true;            // autoplay en móvil
+    // Compat móvil
+    v.muted = true;           // necesario para autoplay en iOS/Android
+    v.playsInline = true;     // iOS
+    v.controls = false;       // usamos controles propios
+    v.preload = "metadata";
     v.volume = volume;
 
     const onFsChange = () => {
@@ -89,24 +97,86 @@ export default function Home() {
     document.addEventListener("webkitfullscreenchange", onFsChange);
     document.addEventListener("MSFullscreenChange", onFsChange);
 
+    // Doble tap/click: alterna play/pausa (300ms)
+    const onPointer = (e) => {
+      if (e.target.closest?.(".videoControls")) return; // no interferir con botones
+      const now = Date.now();
+      const last = v._lastTapTs || 0;
+      v._lastTapTs = now;
+      if (now - last < 300) {
+        if (v.paused) v.play();
+        else v.pause();
+      }
+    };
+    v.addEventListener("pointerdown", onPointer);
+
+    // Evitar guardar video por long-press/click derecho
+    const preventContext = (e) => e.preventDefault();
+    v.addEventListener("contextmenu", preventContext);
+
     return () => {
       v.removeEventListener("play", onPlay);
       v.removeEventListener("pause", onPause);
+      v.removeEventListener("pointerdown", onPointer);
+      v.removeEventListener("contextmenu", preventContext);
       document.removeEventListener("fullscreenchange", onFsChange);
       document.removeEventListener("webkitfullscreenchange", onFsChange);
       document.removeEventListener("MSFullscreenChange", onFsChange);
     };
   }, [volume]);
 
-  // Sincronizar subtítulos con estado
+  // Subtítulos ON/OFF
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
-    try {
-      // Cuando hay <track>, su mode puede ser 'showing' | 'hidden'
-      track.mode = captionsOn ? "showing" : "hidden";
-    } catch {}
+    try { track.mode = captionsOn ? "showing" : "hidden"; } catch {}
   }, [captionsOn]);
+
+  // Guardar volumen
+  useEffect(() => {
+    localStorage.setItem("iy_vol", String(volume));
+  }, [volume]);
+
+  // Pausar cuando la pestaña no está visible (ahorra batería)
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const onVis = () => {
+      if (document.hidden && !v.paused) v.pause();
+      else if (!document.hidden && v.paused) v.play().catch(()=>{});
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+
+  // Pausar si el video sale de pantalla (IntersectionObserver)
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !("IntersectionObserver" in window)) return;
+    let userPaused = false;
+
+    const onPlay = () => { userPaused = false; };
+    const onPause = () => { userPaused = true; };
+    v.addEventListener("pause", onPause);
+    v.addEventListener("play", onPlay);
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting && !v.paused) v.pause();
+          if (e.isIntersecting && v.paused && !userPaused) v.play().catch(()=>{});
+        });
+      },
+      { threshold: 0.2 }
+    );
+    io.observe(v);
+
+    return () => {
+      v.removeEventListener("pause", onPause);
+      v.removeEventListener("play", onPlay);
+      io.disconnect();
+    };
+  }, []);
 
   // ===== Controles de video =====
   const toggleMute = () => {
@@ -115,13 +185,11 @@ export default function Home() {
     const next = !v.muted;
     v.muted = next;
     setIsMuted(next);
-    // Si reactivas sonido y volumen está en 0, sube a un valor cómodo
     if (!next && v.volume === 0) {
       v.volume = 0.5;
       setVolume(0.5);
     }
-    // En móvil: al tocar el icono de volumen, abre/cierra el slider
-    setVolOpen((s) => !s);
+    setVolOpen((s) => !s); // en móvil, abrir/cerrar slider
   };
 
   const changeVolume = (valOrEvent) => {
@@ -162,38 +230,29 @@ export default function Home() {
   const togglePlayPause = () => {
     const v = videoRef.current;
     if (!v) return;
-    if (v.paused) v.play();
+    if (v.paused) v.play().catch(()=>{});
     else v.pause();
   };
 
   const toggleCaptions = () => setCaptionsOn((s) => !s);
 
-  // Atajos de teclado accesibles cuando el contenedor tiene foco
+  // Atajos de teclado cuando el contenedor tiene foco
   const handleKeyDown = (e) => {
-    // Evita scroll con barra espaciadora
-    if (e.key === " ") e.preventDefault();
-
+    if (e.key === " ") e.preventDefault(); // evita scroll
     switch (e.key.toLowerCase()) {
       case " ":
-        togglePlayPause();
-        break;
+        togglePlayPause(); break;
       case "m":
-        toggleMute();
-        break;
+        toggleMute(); break;
       case "f":
-        toggleFullscreen();
-        break;
+        toggleFullscreen(); break;
       case "c":
-        toggleCaptions();
-        break;
+        toggleCaptions(); break;
       case "arrowup":
-        changeVolume(volume + 0.05);
-        break;
+        changeVolume(volume + 0.05); break;
       case "arrowdown":
-        changeVolume(volume - 0.05);
-        break;
-      default:
-        break;
+        changeVolume(volume - 0.05); break;
+      default: break;
     }
   };
 
@@ -277,15 +336,18 @@ export default function Home() {
                 <video
                   className="hero-video"
                   ref={videoRef}
-                  src="/logo-bienvenido.mp4"
-                  preload="metadata"
                   poster="/assets/interpreteya-logo1.jpg"
                   autoPlay
                   loop
                   muted
                   playsInline
+                  preload="metadata"
                   aria-label="Video de bienvenida InterpreteYa"
+                  onError={() => console.warn("No se pudo cargar el video. Revisa rutas en /public.")}
                 >
+                  {/* WebM primero (si lo tienes), MP4 fallback */}
+                  <source src="/logo-bienvenido.webm" type="video/webm" />
+                  <source src="/logo-bienvenido.mp4" type="video/mp4" />
                   {/* Subtítulos: coloca subtitles-es.vtt en /public */}
                   <track
                     ref={trackRef}
@@ -316,7 +378,7 @@ export default function Home() {
                   Volumen {volumePct}%
                 </span>
 
-                {/* --- Controles a la DERECHA, en columna, para no tapar subtítulos --- */}
+                {/* Controles a la DERECHA en columna */}
                 <div className="videoControls right">
                   <div
                     className="controlBar vertical"
@@ -572,7 +634,7 @@ export default function Home() {
                 <div className="divider" />
                 <div className="center">
                   ¿Ya tienes una cuenta?{" "}
-                  <button type="button" className="link-blue neon-link" onClick={abrirLogin}>
+                  <button type="button" className="link-blue neon-link" onClick={() => abrirLogin()}>
                     Inicia Sesión
                   </button>
                 </div>
@@ -617,7 +679,7 @@ export default function Home() {
                 <div className="divider" />
                 <div className="center">
                   ¿Ya tienes una cuenta?{" "}
-                  <button type="button" className="link-blue neon-link" onClick={abrirLogin}>
+                  <button type="button" className="link-blue neon-link" onClick={() => abrirLogin()}>
                     Inicia Sesión
                   </button>
                 </div>
