@@ -18,17 +18,14 @@ import {
   FaBars
 } from "react-icons/fa";
 
-/* UI común (si no los usas, puedes comentar estas líneas) */
+/* UI común */
 import { Protected } from "./components/ui";
 import DevGerenteSwitch from "./components/DevGerenteSwitch";
 
-/* Páginas */
+/* Páginas base */
 import Home from "./pages/Home";
 import Home2 from "./pages/Home2";
-// import TipoUsuario from "./pages/TipoUsuario"; // ❌ Eliminado
 import Login from "./pages/Login";
-import RegistroUsuario from "./pages/RegistroUsuario";
-import RegistroInterprete from "./pages/RegistroInterprete";
 import Solicitar from "./pages/Solicitar";
 import MisReservas from "./pages/MisReservas";
 import Agendar from "./pages/Agendar";
@@ -42,9 +39,20 @@ import Pagar from "./pages/Pagar";
 import Videollamada from "./pages/Videollamada";
 import Intro from "./pages/Intro";
 import LoginGerente from "./pages/LoginGerente";
+
+/* ✅ SINGULAR: página del usuario en revisión */
 import CuentaPendiente from "./pages/CuentaPendiente";
 
-/* Hook de rol (si no lo tienes, reemplázalo por tu lógica actual) */
+/* Logins por RUT */
+import LoginUsuarioRut from "./pages/LoginUsuarioRut";
+import LoginInterpreteRut from "./pages/LoginInterpreteRut";
+
+/* ❌ Eliminado: NO existen estos archivos */
+/* import CuentasPendientes from "./pages/CuentasPendientes";
+   import ListaBloqueos from "./pages/ListaBloqueos";
+   import CrearNoticia from "./pages/CrearNoticia"; */
+
+/* Hook de rol */
 import useUserRole from "./hooks/useUserRole";
 
 /* Placeholders simples */
@@ -61,7 +69,6 @@ export default function App() {
   const [userDoc, setUserDoc] = useState(null);
   const nav = useNavigate();
   const role = useUserRole(user);
-
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -78,6 +85,7 @@ export default function App() {
             role: "usuarioSordo",
             estadoCuenta: "pendiente",
             aprobado: false,
+            bloqueado: false
           };
           await setDoc(ref, base);
           setUserDoc(base);
@@ -93,15 +101,26 @@ export default function App() {
 
   const salir = async () => { await signOut(auth); nav("/"); };
 
+  /* Guardia para secciones que requieren aprobación */
   const Approved = ({ children }) => {
     if (!user) return <Navigate to="/login" replace />;
     if (!userDoc) return <Page title="Verificando"><div className="badge">Cargando…</div></Page>;
+    if (userDoc.bloqueado) {
+      return (
+        <Page title="Acceso bloqueado">
+          <div className="badge" role="alert" style={{ marginTop: 8 }}>
+            Tu cuenta está bloqueada. Por favor, contacta a soporte/gerencia.
+          </div>
+        </Page>
+      );
+    }
     if (userDoc.aprobado !== true) return <Navigate to="/pendiente" replace />;
     return children;
   };
 
   return (
     <>
+      {/* ───── Header ───── */}
       <header className="sticky">
         <div className="container header-row" style={{ justifyContent: "space-between" }}>
           <Link to="/" className="brand logoWrap" onClick={() => setMenuOpen(false)}>
@@ -119,7 +138,6 @@ export default function App() {
           </button>
 
           <nav className={`nav-links ${menuOpen ? "open" : ""}`} onClick={() => setMenuOpen(false)}>
-            {/* ✅ Registro: abre el modal del Home usando state */}
             <NavLink
               to="/"
               state={{ openRegister: true, regTab: "user" }}
@@ -149,7 +167,7 @@ export default function App() {
               <FaUsers /> Intérpretes
             </NavLink>
 
-            {user && userDoc?.aprobado === true && (
+            {user && userDoc?.aprobado === true && !userDoc?.bloqueado && (
               <>
                 <NavLink to="/solicitar" className={({ isActive }) => `btn pill ${isActive ? "active" : ""}`}>
                   <FaUsers /> Solicitar
@@ -166,6 +184,7 @@ export default function App() {
               </>
             )}
 
+            {/* Gerencia (solo link al panel principal si lo usas) */}
             {role === "gerente" && (
               <NavLink to="/gerente" className={({ isActive }) => `btn secondary chip ${isActive ? "active" : ""}`}>
                 Gerente
@@ -179,7 +198,7 @@ export default function App() {
             ) : (
               <>
                 <span className="badge">
-                  <FaUser /> {user.displayName || user.email}
+                  <FaUser /> {userDoc?.displayName || user?.email}
                 </span>
                 <button className="btn" onClick={salir}>
                   <FaSignOutAlt /> Salir
@@ -192,23 +211,28 @@ export default function App() {
         </div>
       </header>
 
-      {/* Rutas */}
+      {/* ───── Rutas ───── */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/home2" element={<Home2 />} />
         <Route path="/intro" element={<Intro />} />
-        {/* <Route path="/tipo-usuario" element={<TipoUsuario />} /> */} {/* ❌ Eliminado */}
-        <Route path="/registro-usuario" element={<RegistroUsuario />} />
-        <Route path="/registro-interprete" element={<RegistroInterprete />} />
+
+        {/* Login selector y logins por RUT */}
         <Route path="/login" element={<Login />} />
-        <Route path="/recuperar" element={<Recuperar />} />
+        <Route path="/login-usuario" element={<LoginUsuarioRut />} />
+        <Route path="/login-interprete" element={<LoginInterpreteRut />} />
         <Route path="/login-gerente" element={<LoginGerente />} />
+
+        {/* Página de estado PENDIENTE del USUARIO (SINGULAR) */}
         <Route path="/pendiente" element={<CuentaPendiente />} />
+
+        <Route path="/recuperar" element={<Recuperar />} />
         <Route path="/interpretes" element={<Interpretes />} />
         <Route path="/interprete/:id" element={<PerfilInterprete />} />
         <Route path="/noticias" element={<Noticias />} />
         <Route path="/emergencia" element={<Emergencia />} />
 
+        {/* Zonas que requieren aprobación */}
         <Route path="/solicitar" element={<Approved><Solicitar /></Approved>} />
         <Route path="/agendar" element={<Approved><Agendar /></Approved>} />
         <Route path="/mis-reservas" element={<Approved><MisReservas /></Approved>} />
@@ -216,8 +240,7 @@ export default function App() {
         <Route path="/evaluacion" element={<Approved><Evaluacion /></Approved>} />
         <Route path="/videollamada" element={<Approved><Videollamada /></Approved>} />
 
-        <Route path="/reporte" element={<ReportePage />} />
-
+        {/* Gerencia */}
         <Route
           path="/gerente"
           element={
@@ -226,11 +249,13 @@ export default function App() {
             </Protected>
           }
         />
+
+        <Route path="/reporte" element={<ReportePage />} />
       </Routes>
 
       {/* ───── Bottom-Nav (móvil) ───── */}
       <nav className="bottom-nav">
-        {user && userDoc?.aprobado === true ? (
+        {user && userDoc?.aprobado === true && !userDoc?.bloqueado ? (
           <>
             <NavLink to="/solicitar" className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}>
               <FaUsers /><span>Solicitar</span>
@@ -247,7 +272,6 @@ export default function App() {
           </>
         ) : (
           <>
-            {/* ✅ Registro abre el modal del Home */}
             <NavLink
               to="/"
               state={{ openRegister: true, regTab: "user" }}
@@ -273,7 +297,6 @@ export default function App() {
           </>
         )}
       </nav>
-      {/* ─── Fin Bottom-Nav ─── */}
 
       <footer className="container" style={{ opacity: .8 }}>
         <div className="badge">© {new Date().getFullYear()} Intérprete Ya — interpreteya.cl</div>
