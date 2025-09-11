@@ -1,0 +1,318 @@
+/* --- Controles del mapa (solo chip) --- */
+.map-controls{
+  position:absolute;
+  right:10px; top:10px;
+  display:flex; flex-direction:column; gap:8px;
+  z-index:2;
+}
+
+/* Nuevo chip reemplazando al antiguo círculo "N" */
+.mc-chip{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.35);
+  color:#fff; font-weight:900; letter-spacing:.2px;
+  backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 10px rgba(255,255,255,.06);
+  user-select:none;
+}
+
+/* Tarjeta y contenedor */
+.radar-card { overflow: hidden; }
+.radar-wrap{
+  position: relative;
+  height: 16rem;           /* ~h-64 */
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, #0e1839, #0b142e);
+}
+
+/* Círculo del radar (suave) */
+.radar-circle{
+  position:absolute; left:50%; top:50%; transform: translate(-50%, -50%);
+  width: 160vmin; height: 160vmin; max-width: 1200px; max-height: 1200px;
+  background:
+    radial-gradient(circle at center, rgba(59,130,246,.20), rgba(59,130,246,0) 60%),
+    radial-gradient(circle at center, rgba(34,211,238,.14), rgba(34,211,238,0) 45%);
+  border-radius:50%;
+  pointer-events: none;
+  filter: blur(.2px);
+}
+
+/* Barrido y anillos cuando searching = true */
+.radar-sweep{ position:absolute; inset:-35%; opacity:0; pointer-events:none; }
+.radar-sweep.on{ opacity:1; }
+
+.radar-sweep .sweep{
+  position:absolute; inset:0;
+  background: conic-gradient(from 0deg,
+              rgba(34,211,238,.28) 0 22%,
+              rgba(34,211,238,0) 23% 100%);
+  border-radius:50%;
+  animation: spin 1.6s linear infinite;
+  filter: blur(.3px);
+}
+
+.radar-sweep .ring{
+  position:absolute; left:50%; top:50%; transform: translate(-50%, -50%) scale(.35);
+  width: 70vmin; height: 70vmin; max-width: 560px; max-height: 560px;
+  border-radius:50%;
+  box-shadow: 0 0 0 2px rgba(34,211,238,.18) inset, 0 0 40px rgba(34,211,238,.18);
+  opacity:0;
+}
+.radar-sweep.on .ring{ animation: ring 1.6s ease-out infinite; }
+.radar-sweep .ring.r2{ animation-delay: .3s; }
+.radar-sweep .ring.r3{ animation-delay: .6s; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes ring {
+  0%   { transform: translate(-50%, -50%) scale(.35); opacity:.6; }
+  100% { transform: translate(-50%, -50%) scale(1.15); opacity:0; }
+}
+
+/* Chip LSCh (reemplaza brújula N) */
+.lsch-chip{
+  position:absolute; right:10px; top:10px; z-index:2;
+  padding:8px 12px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.35); color:#fff; font-weight:900;
+  letter-spacing:.2px; backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 10px rgba(255,255,255,.06);
+  user-select:none;
+}
+
+/* Marcadores */
+.interp-marker{
+  position:absolute; transform: translate(-50%, -50%);
+  display:inline-flex; align-items:center; gap:8px;
+  background: transparent; border:0; cursor:pointer; z-index:2;
+}
+.pulse-dot{
+  width:10px; height:10px; border-radius:50%;
+  background:#22d3ee; box-shadow: 0 0 10px #22d3ee, 0 0 18px rgba(34,211,238,.6);
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+@keyframes dotPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.35)} }
+
+.marker-label{
+  position:absolute; left:50%; top:-12px; transform: translate(-50%, -100%);
+  background:#ffffff; color:#0b132a;
+  padding:6px 10px; border-radius:10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  border:1px solid rgba(0,0,0,.06);
+  font-weight:800; font-size: 14px; white-space:nowrap;
+}
+.marker-label .avatar{
+  display:inline-grid; place-items:center;
+  width:20px; height:20px; margin-right:6px;
+  background:#eef2ff; border-radius:50%;
+  font-size:13px;
+}
+
+/* Toast “Buscando…” */
+.search-toast{
+  position:absolute; left:12px; top:12px; z-index:3;
+  display:flex; align-items:center; gap:10px;
+  background: rgba(6,12,30,.85);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius: 12px; padding: 8px 12px; color:#e9f2ff;
+  opacity:0; transform: translateY(-6px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+.search-toast.show{ opacity:1; transform: translateY(0); }
+.spinner{
+  width:16px; height:16px; border:3px solid rgba(255,255,255,.25);
+  border-top-color:#22d3ee; border-radius:50%;
+  animation: spin .8s linear infinite;
+}
+
+/* Botón inferior centrado */
+.radar-actions{
+  position:absolute; left:0; right:0; bottom:12px; display:grid; place-items:center;
+}
+
+/* Responsive */
+@media (max-width: 720px){
+  .radar-wrap{ height: 14rem; }
+  .marker-label{ font-size: 13px; }
+}
+
+/* Contenedor */
+.radar-card { overflow: hidden; }
+.radar-wrap{
+  position: relative;
+  height: 16rem;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    /* “cuadriculado” muy suave */
+    repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 28px),
+    linear-gradient(180deg, #0e1839, #0b142e);
+}
+
+/* círculo amplio */
+.radar-circle{
+  position:absolute; left:50%; top:50%; transform: translate(-50%, -50%);
+  width: 150vmin; height: 150vmin; max-width: 1100px; max-height: 1100px;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at center, rgba(59,130,246,.20), rgba(59,130,246,0) 60%),
+    radial-gradient(circle at center, rgba(34,211,238,.12), rgba(34,211,238,0) 45%);
+  pointer-events: none;
+}
+
+/* giro suave SIEMPRE visible */
+.radar-spin{
+  position:absolute; inset:-35%;
+  border-radius:50%;
+  background: conic-gradient(from 0deg,
+              rgba(34,211,238,.10) 0 20%,
+              rgba(34,211,238,0) 21% 100%);
+  animation: spin-slow 12s linear infinite;
+  mix-blend-mode: screen;
+  opacity:.7;
+  pointer-events:none;
+}
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
+/* barrido fuerte al buscar */
+.radar-sweep{ position:absolute; inset:-35%; opacity:0; pointer-events:none; }
+.radar-sweep.on{ opacity:1; }
+.radar-sweep .sweep{
+  position:absolute; inset:0; border-radius:50%;
+  background: conic-gradient(from 0deg,
+              rgba(34,211,238,.30) 0 22%,
+              rgba(34,211,238,0) 23% 100%);
+  animation: spin-fast 1.6s linear infinite;
+  filter: blur(.3px);
+}
+.radar-sweep .ring{
+  position:absolute; left:50%; top:50%; transform: translate(-50%, -50%) scale(.35);
+  width: 70vmin; height: 70vmin; max-width: 560px; max-height: 560px;
+  border-radius:50%;
+  box-shadow: 0 0 0 2px rgba(34,211,238,.2) inset, 0 0 40px rgba(34,211,238,.2);
+  opacity:0;
+}
+.radar-sweep.on .ring{ animation: ring 1.6s ease-out infinite; }
+.radar-sweep .ring.r2{ animation-delay: .3s; }
+.radar-sweep .ring.r3{ animation-delay: .6s; }
+
+@keyframes spin-fast { to { transform: rotate(360deg); } }
+@keyframes ring {
+  0%   { transform: translate(-50%, -50%) scale(.35); opacity:.7; }
+  100% { transform: translate(-50%, -50%) scale(1.15); opacity:0; }
+}
+
+/* Chip LSCh (sustituye brújula) */
+.lsch-chip{
+  position:absolute; right:10px; top:10px; z-index:3;
+  padding:8px 12px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.35); color:#fff; font-weight:900;
+  letter-spacing:.2px; backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 10px rgba(255,255,255,.06);
+  user-select:none;
+}
+
+/* Pin central con anillos */
+.center-pin{
+  position:absolute; left:50%; top:50%; transform: translate(-50%, -50%);
+  width: 0; height: 0; z-index:2; pointer-events:none;
+}
+.center-pin .pin-dot{
+  position:absolute; left:50%; top:50%; transform: translate(-50%, -50%);
+  width:34px; height:34px; border-radius:50%;
+  display:grid; place-items:center;
+  background: #111a3a; color:#fff; border:1px solid rgba(255,255,255,.18);
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+}
+.center-pin .pin-ring{
+  position:absolute; left:50%; top:50%; transform: translate(-50%, -50%);
+  width:80px; height:80px; border-radius:50%;
+  border:2px dashed rgba(34,211,238,.55);
+  opacity:.9;
+}
+.center-pin .pin-ring.spin{ animation: spin-mid 2.4s linear infinite; }
+@keyframes spin-mid { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+.center-pin .pin-pulse{
+  position:absolute; left:50%; top:50%; transform: translate(-50%, -50%);
+  width:120px; height:120px; border-radius:50%;
+  box-shadow: 0 0 0 0 rgba(34,211,238,.25);
+  opacity:0;
+}
+.center-pin.active .pin-pulse{
+  animation: pulse 1.6s ease-out infinite;
+}
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34,211,238,.25); opacity:1; }
+  100% { box-shadow: 0 0 0 36px rgba(34,211,238,0); opacity:0; }
+}
+
+/* Marcadores */
+.interp-marker{
+  position:absolute; transform: translate(-50%, -50%);
+  display:inline-flex; align-items:center; gap:8px;
+  background: transparent; border:0; cursor:pointer; z-index:4;
+}
+.pulse-dot{
+  width:10px; height:10px; border-radius:50%;
+  background:#22d3ee; box-shadow: 0 0 10px #22d3ee, 0 0 18px rgba(34,211,238,.6);
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+@keyframes dotPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.35)} }
+
+.marker-label{
+  position:absolute; left:50%; top:-12px; transform: translate(-50%, -100%);
+  background:#ffffff; color:#0b132a;
+  padding:6px 10px; border-radius:10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  border:1px solid rgba(0,0,0,.06);
+  font-weight:800; font-size: 14px; white-space:nowrap;
+}
+.marker-label .avatar{
+  display:inline-grid; place-items:center;
+  width:20px; height:20px; margin-right:6px;
+  background:#eef2ff; border-radius:50%;
+  font-size:13px;
+}
+
+/* Toast “Buscando…” */
+.search-toast{
+  position:absolute; left:12px; top:12px; z-index:5;
+  display:flex; align-items:center; gap:10px;
+  background: rgba(6,12,30,.85);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius: 12px; padding: 8px 12px; color:#e9f2ff;
+  opacity:0; transform: translateY(-6px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+.search-toast.show{ opacity:1; transform: translateY(0); }
+.spinner{
+  width:16px; height:16px; border:3px solid rgba(255,255,255,.25);
+  border-top-color:#22d3ee; border-radius:50%;
+  animation: spin-fast .8s linear infinite;
+}
+
+/* CTA inferior */
+.radar-actions{
+  position:absolute; left:0; right:0; bottom:12px; display:grid; place-items:center;
+  z-index:5;
+}
+
+/* Motion safe */
+@media (prefers-reduced-motion: reduce){
+  .radar-spin, .radar-sweep .sweep, .ring, .pin-ring, .pin-pulse, .spinner { animation:none!important; }
+}
+
+/* Responsive */
+@media (max-width: 720px){
+  .radar-wrap{ height: 14rem; }
+  .marker-label{ font-size: 13px; }
+}

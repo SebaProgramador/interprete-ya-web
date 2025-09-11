@@ -12,7 +12,7 @@ export default function Login() {
         <div className="card auth-card">
           <div style={{ textAlign: "center", marginTop: -2 }}>
             <span className="logoWrap">
-              <img src="/logo.png" alt="InterpreteYa" />
+              <img src="/login-logo.png" alt="InterpreteYa" />
             </span>
             <h1 className="heroTitle" style={{ marginTop: 8 }}>
               Acceso a la plataforma
