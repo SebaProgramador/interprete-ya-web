@@ -6,8 +6,6 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import "./theme.css";
 import {
-  FaUserPlus,
-  FaRegNewspaper,
   FaAmbulance,
   FaUsers,
   FaCalendarAlt,
@@ -15,7 +13,10 @@ import {
   FaSignInAlt,
   FaSignOutAlt,
   FaUser,
-  FaBars
+  FaBars,
+  FaTimes,
+  FaRegNewspaper,
+  FaUserPlus
 } from "react-icons/fa";
 
 /* UI común */
@@ -40,22 +41,17 @@ import Videollamada from "./pages/Videollamada";
 import Intro from "./pages/Intro";
 import LoginGerente from "./pages/LoginGerente";
 
-/* ✅ SINGULAR: página del usuario en revisión */
+/* SINGULAR: estado de cuenta */
 import CuentaPendiente from "./pages/CuentaPendiente";
 
 /* Logins por RUT */
 import LoginUsuarioRut from "./pages/LoginUsuarioRut";
 import LoginInterpreteRut from "./pages/LoginInterpreteRut";
 
-/* ❌ Eliminado: NO existen estos archivos */
-/* import CuentasPendientes from "./pages/CuentasPendientes";
-   import ListaBloqueos from "./pages/ListaBloqueos";
-   import CrearNoticia from "./pages/CrearNoticia"; */
-
 /* Hook de rol */
 import useUserRole from "./hooks/useUserRole";
 
-/* Placeholders simples */
+/* Helpers de UI */
 const Page = ({ title, children }) => (
   <div className="container">
     <div className="card"><h2>{title}</h2>{children}</div>
@@ -69,8 +65,10 @@ export default function App() {
   const [userDoc, setUserDoc] = useState(null);
   const nav = useNavigate();
   const role = useUserRole(user);
-  const [menuOpen, setMenuOpen] = useState(false);
 
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // ======== Auth ========
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
@@ -101,7 +99,7 @@ export default function App() {
 
   const salir = async () => { await signOut(auth); nav("/"); };
 
-  /* Guardia para secciones que requieren aprobación */
+  // ======== Guardias ========
   const Approved = ({ children }) => {
     if (!user) return <Navigate to="/login" replace />;
     if (!userDoc) return <Page title="Verificando"><div className="badge">Cargando…</div></Page>;
@@ -118,100 +116,143 @@ export default function App() {
     return children;
   };
 
+  // ======== Drawer (móvil) ========
+  // Bloquear scroll al abrir
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = drawerOpen ? "hidden" : prev || "";
+    return () => { document.body.style.overflow = prev || ""; };
+  }, [drawerOpen]);
+
+  // Cerrar con ESC
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") setDrawerOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const closeDrawer = () => setDrawerOpen(false);
+
   return (
     <>
-      {/* ───── Header ───── */}
+      {/* ===== Header ===== */}
       <header className="sticky">
         <div className="container header-row" style={{ justifyContent: "space-between" }}>
-          <Link to="/" className="brand logoWrap" onClick={() => setMenuOpen(false)}>
+          <Link to="/" className="brand logoWrap" onClick={closeDrawer}>
             <img src="/interpreteya-logo.png" alt="Intérprete Ya" width="36" height="36" />
-            <span>PRONTO....</span>
+            <span className="brand-text">InterpreteYa <span aria-hidden="true">🤟</span></span>
           </Link>
 
+          {/* Botón hamburguesa (solo móvil) */}
           <button
             className="btn icon mobile-toggle"
-            aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
-            aria-expanded={menuOpen ? "true" : "false"}
-            onClick={() => setMenuOpen(v => !v)}
+            aria-label={drawerOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={drawerOpen ? "true" : "false"}
+            onClick={() => setDrawerOpen(v => !v)}
           >
             <FaBars />
           </button>
 
-          <nav className={`nav-links ${menuOpen ? "open" : ""}`} onClick={() => setMenuOpen(false)}>
+          {/* Navegación de escritorio */}
+          <nav className="top-nav" aria-label="Principal">
             <NavLink
               to="/"
               state={{ openRegister: true, regTab: "user" }}
-              className={({ isActive }) => `btn secondary chip ${isActive ? "active" : ""}`}
+              className={({ isActive }) => `top-link ${isActive ? "active" : ""}`}
+              onClick={closeDrawer}
             >
               <FaUserPlus /> Registro
             </NavLink>
 
-            <NavLink
-              to="/noticias"
-              className={({ isActive }) => `btn secondary chip ${isActive ? "active" : ""}`}
-            >
+            <NavLink to="/noticias" className={({ isActive }) => `top-link ${isActive ? "active" : ""}`} onClick={closeDrawer}>
               <FaRegNewspaper /> Noticias
             </NavLink>
 
-            <NavLink
-              to="/emergencia"
-              className={({ isActive }) => `btn emergency ${isActive ? "active" : ""}`}
-            >
-              <FaAmbulance /> Emergencia 24/7
-            </NavLink>
-
-            <NavLink
-              to="/interpretes"
-              className={({ isActive }) => `btn secondary chip ${isActive ? "active" : ""}`}
-            >
+            <NavLink to="/interpretes" className={({ isActive }) => `top-link ${isActive ? "active" : ""}`} onClick={closeDrawer}>
               <FaUsers /> Intérpretes
             </NavLink>
 
-            {user && userDoc?.aprobado === true && !userDoc?.bloqueado && (
-              <>
-                <NavLink to="/solicitar" className={({ isActive }) => `btn pill ${isActive ? "active" : ""}`}>
-                  <FaUsers /> Solicitar
-                </NavLink>
-                <NavLink to="/agendar" className={({ isActive }) => `btn pill ${isActive ? "active" : ""}`}>
-                  <FaCalendarAlt /> Agendar
-                </NavLink>
-                <NavLink to="/videollamada" className={({ isActive }) => `btn pill ${isActive ? "active" : ""}`}>
-                  <FaVideo /> Videollamada
-                </NavLink>
-                <NavLink to="/mis-reservas" className={({ isActive }) => `btn secondary chip ${isActive ? "active" : ""}`}>
-                  Mis Reservas
-                </NavLink>
-              </>
-            )}
-
-            {/* Gerencia (solo link al panel principal si lo usas) */}
-            {role === "gerente" && (
-              <NavLink to="/gerente" className={({ isActive }) => `btn secondary chip ${isActive ? "active" : ""}`}>
-                Gerente
-              </NavLink>
-            )}
+            <NavLink to="/emergencia" className={({ isActive }) => `top-link danger ${isActive ? "active" : ""}`} onClick={closeDrawer}>
+              <FaAmbulance /> Emergencia 24/7
+            </NavLink>
 
             {!user ? (
-              <NavLink to="/login" className="btn">
+              <NavLink to="/login" className="top-cta" onClick={closeDrawer}>
                 <FaSignInAlt /> Ingresar
               </NavLink>
             ) : (
               <>
-                <span className="badge">
+                <span className="badge compact">
                   <FaUser /> {userDoc?.displayName || user?.email}
                 </span>
-                <button className="btn" onClick={salir}>
+                <button className="top-cta" onClick={salir}>
                   <FaSignOutAlt /> Salir
                 </button>
               </>
             )}
-
-            <DevGerenteSwitch />
           </nav>
         </div>
       </header>
 
-      {/* ───── Rutas ───── */}
+      {/* ===== Drawer móvil ===== */}
+      {drawerOpen && (
+        <div className="drawer-backdrop" role="dialog" aria-modal="true" onClick={closeDrawer}>
+          <aside
+            className="drawer"
+            aria-label="Menú"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="drawer-head">
+              <span className="drawer-title">Menú</span>
+              <button className="icon-btn" aria-label="Cerrar" onClick={closeDrawer}><FaTimes /></button>
+            </div>
+
+            <nav className="drawer-list">
+              <NavLink to="/" onClick={closeDrawer} className="drawer-link">
+                Inicio
+              </NavLink>
+
+              <NavLink
+                to="/"
+                state={{ openRegister: true, regTab: "user" }}
+                onClick={closeDrawer}
+                className="drawer-link"
+              >
+                Registro
+              </NavLink>
+
+              <NavLink to="/noticias" onClick={closeDrawer} className="drawer-link">
+                Noticias
+              </NavLink>
+
+              <NavLink to="/interpretes" onClick={closeDrawer} className="drawer-link">
+                Intérpretes
+              </NavLink>
+
+              <NavLink to="/emergencia" onClick={closeDrawer} className="drawer-link danger">
+                Emergencia 24/7
+              </NavLink>
+
+              <div className="drawer-divider" />
+
+              {!user ? (
+                <NavLink to="/login" onClick={closeDrawer} className="drawer-link primary">
+                  Ingresar
+                </NavLink>
+              ) : (
+                <>
+                  <span className="drawer-user"><FaUser /> {userDoc?.displayName || user?.email}</span>
+                  <button className="drawer-link primary" onClick={() => { closeDrawer(); salir(); }}>
+                    Salir
+                  </button>
+                </>
+              )}
+            </nav>
+          </aside>
+        </div>
+      )}
+
+      {/* ===== Rutas ===== */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/home2" element={<Home2 />} />
@@ -223,7 +264,7 @@ export default function App() {
         <Route path="/login-interprete" element={<LoginInterpreteRut />} />
         <Route path="/login-gerente" element={<LoginGerente />} />
 
-        {/* Página de estado PENDIENTE del USUARIO (SINGULAR) */}
+        {/* Página de estado pendiente (SINGULAR) */}
         <Route path="/pendiente" element={<CuentaPendiente />} />
 
         <Route path="/recuperar" element={<Recuperar />} />
@@ -232,7 +273,7 @@ export default function App() {
         <Route path="/noticias" element={<Noticias />} />
         <Route path="/emergencia" element={<Emergencia />} />
 
-        {/* Zonas que requieren aprobación */}
+        {/* Requieren aprobación */}
         <Route path="/solicitar" element={<Approved><Solicitar /></Approved>} />
         <Route path="/agendar" element={<Approved><Agendar /></Approved>} />
         <Route path="/mis-reservas" element={<Approved><MisReservas /></Approved>} />
@@ -253,8 +294,8 @@ export default function App() {
         <Route path="/reporte" element={<ReportePage />} />
       </Routes>
 
-      {/* ───── Bottom-Nav (móvil) ───── */}
-      <nav className="bottom-nav">
+      {/* ===== Bottom-Nav (móvil) ===== */}
+      <nav className="bottom-nav" aria-label="Acciones rápidas">
         {user && userDoc?.aprobado === true && !userDoc?.bloqueado ? (
           <>
             <NavLink to="/solicitar" className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}>

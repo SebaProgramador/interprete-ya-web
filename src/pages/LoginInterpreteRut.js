@@ -1,14 +1,15 @@
-// src/pages/LoginInterpreteRut.js
+// src/pages/LoginUsuarioRut.js
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Page, Row, Button, Field, Ico } from "../components/ui";
 import { auth, db } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
+import "../styles/auth-cyber.css"; // 👈 importa el tema
 
 const normalizaRut = (r) => (r || "").trim().replace(/\./g, "").toUpperCase();
 
-export default function LoginInterpreteRut() {
+export default function LoginUsuarioRut() {
   const nav = useNavigate();
   const [rut, setRut] = React.useState("");
   const [pass, setPass] = React.useState("");
@@ -32,12 +33,12 @@ export default function LoginInterpreteRut() {
       const q = query(
         collection(db, "users"),
         where("dni", "==", rutN),
-        where("role", "==", "interprete"),
+        where("role", "in", ["usuarioSordo", "usuario"]),
         limit(1)
       );
       const s = await getDocs(q);
       if (s.empty) {
-        setMsg("RUT no encontrado o no corresponde a Intérprete.");
+        setMsg("RUT no encontrado o no corresponde a Usuario.");
         return;
       }
       const u = s.docs[0].data();
@@ -59,31 +60,28 @@ export default function LoginInterpreteRut() {
   };
 
   return (
-    <Page title="Ingresar — Intérprete (RUT)">
-      <div className="auth-box">
-        <div className="card auth-card">
-          <div style={{ textAlign: "center", marginTop: -2 }}>
-            <img src="/logo.png" alt="InterpreteYa" />
-            <h2 className="heroTitle" style={{ marginTop: 8 }}>
-              Intérprete — Acceso con RUT
+    <Page title="Ingresar — Usuario (RUT)" className="theme-cyber">
+      <div className="cyber-bg" aria-hidden />
+      <div className="auth-wrap">
+        <div className="card auth-card neon">
+          <div className="brand-header">
+            <picture>
+              <source srcSet="/logo-login.svg" type="image/svg+xml" />
+              <img src="/logo.png" alt="Intérprete Ya — logo" className="brand-logo" />
+            </picture>
+            <h2 className="heroTitle">
+              Usuario — Acceso con RUT <span aria-hidden>🧏🏻</span>
             </h2>
             <div className="heroSub">Ingresa tus credenciales</div>
           </div>
 
           {msg && (
-            <div
-              role="alert"
-              className="badge state-error"
-              style={{ marginTop: 12, width: "100%", justifyContent: "center" }}
-            >
+            <div role="alert" aria-live="assertive" className="badge state-error shake center">
               {msg}
             </div>
           )}
 
-          <form
-            onSubmit={ingresar}
-            style={{ display: "grid", gap: 12, marginTop: 12 }}
-          >
+          <form onSubmit={ingresar} className="form-grid">
             <Field
               label="RUT"
               type="text"
@@ -108,9 +106,10 @@ export default function LoginInterpreteRut() {
               error={errors.pass}
               autoComplete="current-password"
               enterKeyHint="go"
+              hint="Mínimo 6 caracteres"
             />
 
-            <label className="badge" style={{ width: "fit-content" }}>
+            <label className="chip ghost">
               <input
                 type="checkbox"
                 checked={show}
@@ -121,28 +120,20 @@ export default function LoginInterpreteRut() {
             </label>
 
             <Row>
-              <Button
-                type="submit"
-                full
-                className="lg"
-                iconRight={Ico.Next}
-                disabled={loading}
-              >
+              <Button type="submit" full className="lg glow" iconRight={Ico.Next} disabled={loading}>
                 {loading ? "Ingresando..." : "Ingresar"}
               </Button>
             </Row>
 
-            <Row
-              style={{ justifyContent: "center", gap: 8, flexWrap: "wrap" }}
-            >
-              <Link className="badge" to="/recuperar">
-                Recuperar Contraseña
-              </Link>
-              <Link className="badge" to="/login">
-                Volver a opciones
-              </Link>
+            <Row className="links-row">
+              <Link className="chip" to="/recuperar">🔑 Recuperar</Link>
+              <Link className="chip" to="/login">↩️ Volver</Link>
             </Row>
           </form>
+
+          <div className="emoji-strip" aria-hidden>
+            🧏🏻‍♀️ 🧏🏻‍♂️ 🤟🏼 🇨🇱
+          </div>
         </div>
       </div>
     </Page>

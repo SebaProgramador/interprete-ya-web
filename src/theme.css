@@ -618,3 +618,115 @@ h1,h2,h3{ color: var(--text); letter-spacing: .2px; }
 .state-info{ border-color: rgba(79,140,255,.5) !important; background: rgba(79,140,255,.08) !important; }
 
 
+/* ===== Header / Top Nav ===== */
+.sticky{
+  position: sticky; top:0; z-index: 40;
+  backdrop-filter: blur(10px);
+  background: rgba(7, 12, 28, .65);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.header-row{ display:flex; align-items:center; gap:12px; min-height:64px; }
+.brand.logoWrap{ display:flex; align-items:center; gap:10px; color:#e9f2ff; text-decoration:none; }
+.brand.logoWrap img{ filter: drop-shadow(0 0 6px #06b6d4); }
+.brand-text{ font-weight:900; letter-spacing:.3px; }
+
+/* botón hamburguesa (solo móvil) */
+.mobile-toggle{
+  display:none;
+  width:40px; height:40px; border-radius:12px;
+  border:1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06); color:#fff;
+}
+
+.top-nav{ display:flex; align-items:center; gap:10px; }
+.top-link{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 12px; border-radius:12px; color:#e9f2ff; text-decoration:none;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.04);
+  font-weight:800;
+}
+.top-link:hover{ background: rgba(255,255,255,.08); }
+.top-link.active{ box-shadow: inset 0 0 0 1px rgba(34,211,238,.25); }
+
+.top-link.danger{
+  background: linear-gradient(180deg, #f43f5e, #e11d48);
+  border-color: rgba(255,255,255,.2);
+}
+
+.top-cta{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 14px; border-radius:12px; color:#fff; text-decoration:none;
+  border:0; cursor:pointer; background: linear-gradient(180deg, #3b82f6, #2563eb);
+  font-weight:900;
+}
+.top-cta:hover{ filter: brightness(1.05); }
+
+.badge.compact{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; }
+
+/* ===== Drawer (móvil) ===== */
+.drawer-backdrop{
+  position: fixed; inset:0; z-index: 2000;
+  background: rgba(3, 6, 23, .72);
+  backdrop-filter: blur(6px);
+  display:flex; justify-content:flex-start; align-items:stretch;
+}
+.drawer{
+  width: 86vw; max-width: 380px; height: 100%;
+  background: linear-gradient(180deg, #0f1b3a, #0b1530);
+  border-right: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  padding: 14px;
+  overflow-y:auto;
+}
+.drawer-head{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,.08);
+}
+.drawer-title{ font-weight:900; letter-spacing:.3px; }
+.icon-btn{
+  background: transparent; color:#e9f2ff; border:1px solid rgba(255,255,255,.18);
+  padding:8px 10px; border-radius:10px; cursor:pointer;
+}
+.icon-btn:hover{ background: rgba(255,255,255,.08); }
+
+.drawer-list{ display:flex; flex-direction:column; padding-top:8px; }
+.drawer-link{
+  display:block; width:100%; text-decoration:none; color:#e9f2ff;
+  padding:12px 10px; border-radius:12px; font-weight:800;
+  border:1px solid transparent;
+}
+.drawer-link:hover{ background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }
+.drawer-link.danger{ background: linear-gradient(180deg, #f43f5e, #e11d48); }
+.drawer-link.primary{ background: linear-gradient(180deg, #3b82f6, #2563eb); text-align:center; }
+
+.drawer-user{
+  display:flex; align-items:center; gap:8px;
+  padding:8px 10px; color:#9fb3d8; font-weight:700;
+}
+.drawer-divider{ height:1px; background: rgba(255,255,255,.10); margin:8px 0; }
+
+/* ===== Bottom nav (móvil) ===== */
+.bottom-nav{
+  position: sticky; bottom:0; z-index:35;
+  display:none; /* solo móvil */
+  background: rgba(7,12,28,.85);
+  border-top:1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(10px);
+}
+.bn-item{
+  flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; padding:10px 0; color:#e9f2ff; text-decoration:none; font-weight:800;
+}
+.bn-item.danger{ color:#fecaca; }
+.bn-item.active{ text-shadow: 0 0 12px rgba(34,211,238,.45); }
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px){
+  .top-nav{ display:none; }
+  .mobile-toggle{ display:inline-flex; align-items:center; justify-content:center; }
+  .bottom-nav{ display:flex; }
+}
+
+

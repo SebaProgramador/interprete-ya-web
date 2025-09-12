@@ -60,12 +60,12 @@ export default function LoginUsuarioRut() {
 
   return (
     <Page title="Ingresar — Usuario (RUT)">
-      <div className="auth-box">
-        <div className="card auth-card">
+      <div className="auth-box" style={{ padding: 12 }}>
+        <div className="card auth-card" style={{ maxWidth: 560, margin: "0 auto", padding: 16 }}>
           <div style={{ textAlign: "center", marginTop: -2 }}>
-            <img src="/logo.png" alt="InterpreteYa" />
+            <img src="/logo.png" alt="InterpreteYa" style={{ maxHeight: 64 }} />
             <h2 className="heroTitle" style={{ marginTop: 8 }}>
-              Usuario — Acceso con RUT
+              Usuario — Acceso con RUT <span aria-hidden>🧏🏻</span>
             </h2>
             <div className="heroSub">Ingresa tus credenciales</div>
           </div>
@@ -73,17 +73,15 @@ export default function LoginUsuarioRut() {
           {msg && (
             <div
               role="alert"
+              aria-live="assertive"
               className="badge state-error"
-              style={{ marginTop: 12, width: "100%", justifyContent: "center" }}
+              style={{ marginTop: 12, width: "100%", justifyContent: "center", textAlign: "center" }}
             >
               {msg}
             </div>
           )}
 
-          <form
-            onSubmit={ingresar}
-            style={{ display: "grid", gap: 12, marginTop: 12 }}
-          >
+          <form onSubmit={ingresar} style={{ display: "grid", gap: 12, marginTop: 12 }}>
             <Field
               label="RUT"
               type="text"
@@ -108,6 +106,7 @@ export default function LoginUsuarioRut() {
               error={errors.pass}
               autoComplete="current-password"
               enterKeyHint="go"
+              hint="Mínimo 6 caracteres"
             />
 
             <label className="badge" style={{ width: "fit-content" }}>
@@ -121,28 +120,20 @@ export default function LoginUsuarioRut() {
             </label>
 
             <Row>
-              <Button
-                type="submit"
-                full
-                className="lg"
-                iconRight={Ico.Next}
-                disabled={loading}
-              >
+              <Button type="submit" full className="lg" iconRight={Ico.Next} disabled={loading}>
                 {loading ? "Ingresando..." : "Ingresar"}
               </Button>
             </Row>
 
-            <Row
-              style={{ justifyContent: "center", gap: 8, flexWrap: "wrap" }}
-            >
-              <Link className="badge" to="/recuperar">
-                Recuperar Contraseña
-              </Link>
-              <Link className="badge" to="/login">
-                Volver a opciones
-              </Link>
+            <Row style={{ justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
+              <Link className="badge" to="/recuperar">🔑 Recuperar</Link>
+              <Link className="badge" to="/login">↩️ Volver</Link>
             </Row>
           </form>
+
+          <div className="emoji-strip" aria-hidden style={{ marginTop: 10, textAlign: "center", fontSize: 18 }}>
+            🧏🏻‍♀️ 🧏🏻‍♂️ 🤟🏼 
+          </div>
         </div>
       </div>
     </Page>

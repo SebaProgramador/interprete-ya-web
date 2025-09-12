@@ -3,8 +3,9 @@ import React, { useEffect, useState } from "react";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import "../styles/auth-cyber.css"; // 👈 importa el tema
 
-/* Los únicos correos con acceso al panel del Gerente */
+/* 🔐 Edita esta lista con los correos de gerentes autorizados */
 const GERENTES_ALLOW = new Set([
   "gerentesebastian@admin.com",
   "gerenteandres@admin.com",
@@ -18,7 +19,6 @@ export default function LoginGerente() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Si ya está logueado y es gerente, entrar directo
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       if (u && GERENTES_ALLOW.has((u.email || "").toLowerCase())) {
@@ -51,8 +51,6 @@ export default function LoginGerente() {
     setLoading(true);
     try {
       const res = await signInWithEmailAndPassword(auth, mail, password);
-
-      // Permitir solo a la lista blanca
       if (GERENTES_ALLOW.has((res.user.email || "").toLowerCase())) {
         navigate("/admin-gerente", { replace: true });
       } else {
@@ -67,53 +65,65 @@ export default function LoginGerente() {
   };
 
   return (
-    <div className="page" style={{ maxWidth: 420, margin: "40px auto" }}>
-      <div className="card" style={{ padding: 16 }}>
-        <h2 style={{ marginBottom: 12 }}>Acceso Gerente</h2>
-        <form onSubmit={handleLogin} className="col" style={{ gap: 10 }}>
-          <input
-            type="email"
-            placeholder="Correo del gerente"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="username"
-            required
-          />
+    <div className="theme-cyber page-pad">
+      <div className="cyber-bg" aria-hidden />
+      <div className="auth-wrap">
+        <div className="card auth-card neon">
+          <header className="brand-header small">
+            <picture>
+              <source srcSet="/logo-login.svg" type="image/svg+xml" />
+              <img src="/login-logo.png" alt="Intérprete Ya — logo" className="brand-logo sm" />
+            </picture>
+            <h2 className="heroTitle">Acceso Gerente <span aria-hidden>👩‍💼</span></h2>
+            <p className="heroSub">Solo cuentas autorizadas.</p>
+          </header>
 
-          <div className="row" style={{ gap: 8 }}>
+          <form onSubmit={handleLogin} className="form-grid">
+            <label className="sr-only" htmlFor="correoGerente">Correo del gerente</label>
             <input
-              type={showPwd ? "text" : "password"}
-              placeholder="Contraseña"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              style={{ flex: 1 }}
+              id="correoGerente"
+              type="email"
+              placeholder="Correo del gerente"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
               required
+              className="input glow"
             />
-            <button
-              type="button"
-              className="btn secondary"
-              onClick={() => setShowPwd((s) => !s)}
-              aria-label={showPwd ? "Ocultar contraseña" : "Mostrar contraseña"}
-            >
-              {showPwd ? "🙈" : "👁️"}
+
+            <div className="row-gap">
+              <label className="sr-only" htmlFor="pwdGerente">Contraseña</label>
+              <input
+                id="pwdGerente"
+                type={showPwd ? "text" : "password"}
+                placeholder="Contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                className="input glow flex-1"
+                required
+              />
+              <button
+                type="button"
+                className="btn secondary ghost"
+                onClick={() => setShowPwd((s) => !s)}
+                aria-label={showPwd ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                {showPwd ? "🙈" : "👁️"}
+              </button>
+            </div>
+
+            <button type="submit" className="btn glow" disabled={loading}>
+              {loading ? "Ingresando..." : "Ingresar"}
             </button>
-          </div>
+          </form>
 
-          <button type="submit" className="btn" disabled={loading}>
-            {loading ? "Ingresando..." : "Ingresar"}
-          </button>
-        </form>
-
-        {error && (
-          <p className="badge" style={{ marginTop: 10, color: "#c62828" }}>
-            {error}
-          </p>
-        )}
-
-        <p className="badge" style={{ marginTop: 10 }}>
-          Solo para cuentas autorizadas del Gerente.
-        </p>
+          {error && (
+            <p role="alert" aria-live="assertive" className="badge state-error shake">
+              {error}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
