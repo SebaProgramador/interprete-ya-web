@@ -1,7 +1,7 @@
 // src/pages/Home.js
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import "./home.css";
+
 
 import VideoHero from "../components/VideoHero";
 import NearbyMap from "../components/NearbyMap";

@@ -1,4 +1,4 @@
-/* ====== InterpreteYa — Tema Cyber LED PRO + Tecnología (Suave, Accesible) ====== */
+/* ====== InterpreteYa — Tema Cyber LED Elegante + Accesible (SUAVE) ====== */
 :root{
   --bg: #070d1a;
   --bg-2: #0b162b;
@@ -13,10 +13,10 @@
   --info:  #38bdf8;
 
   /* tamaños globales */
-  --r: 20px;
+  --r: 20px;             /* radio tarjetas */
   --pad: 14px;
-  --logo-min: 92px;
-  --logo-max: 180px;     /* logo grande pero elegante */
+  --logo-min: 88px;
+  --logo-max: 180px;     /* logo grande, pero visual SUAVE */
   --btn-h: 54px;
   --btn-fs: 16px;
 }
@@ -24,71 +24,38 @@
 .theme-cyber { position:relative; min-height:100dvh; background: var(--bg); color:var(--text); }
 .page-pad    { min-height:100dvh; background: var(--bg); color:var(--text); }
 
-/* =========================================================
-   FONDO TECNOLÓGICO (gradientes + grid + scanlines + circuito + partículas)
-   Usa .cyber-bg.tech en el markup
-   ========================================================= */
+/* ===== Fondo: gradientes + grid + scanlines (SUAVE) ===== */
 .cyber-bg{
   position:fixed; inset:-30vmax; z-index:0; pointer-events:none;
   background:
     radial-gradient(60vmax 40vmax at 10% 10%, rgba(34,211,238,.08), transparent 60%),
     radial-gradient(60vmax 40vmax at 90% 0%,  rgba(96,165,250,.08), transparent 60%),
-    radial-gradient(70vmax 60vmax at 50% 90%, rgba(139,92,246,.05), transparent 60%),
+    radial-gradient(70vmax 60vmax at 50% 90%, rgba(139,92,246,.06), transparent 65%),
     linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
   filter: blur(.2px);
-  opacity: .96;
+  opacity: .95; /* leve atenuación global */
 }
-
-/* Grid + scanlines suaves */
-.cyber-bg.tech::before,
-.cyber-bg.tech::after{
-  content:""; position:absolute; inset: -6%;
+.cyber-bg::before,
+.cyber-bg::after{
+  content:""; position:absolute; inset: -5%;
   background:
-    repeating-linear-gradient( to right, rgba(255,255,255,.012) 0 1px, transparent 1px 32px ),
-    repeating-linear-gradient( to bottom, rgba(255,255,255,.008) 0 1px, transparent 1px 32px );
-  opacity:.17;
+    repeating-linear-gradient( to right, rgba(255,255,255,.015) 0 1px, transparent 1px 32px ),
+    repeating-linear-gradient( to bottom, rgba(255,255,255,.01) 0 1px, transparent 1px 32px );
+  opacity:.18; /* líneas más suaves */
   mask: radial-gradient(50% 50% at 50% 50%, #000 55%, transparent 100%);
 }
-.cyber-bg.tech::after{
-  background: linear-gradient(180deg, rgba(255,255,255,.02), transparent 60%);
+.cyber-bg::after{
+  background: linear-gradient(180deg, rgba(255,255,255,.025), transparent 60%);
   mix-blend-mode: overlay;
-  opacity:.25;
 }
 
-/* Capa circuito SVG muy tenue (tile) */
-.cyber-bg.tech .circuit{
-  position:absolute; inset:0; opacity:.10; pointer-events:none;
-  background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%2388b4ff' stroke-opacity='0.35' stroke-width='1'%3E%3Cpath d='M0 40h60m20 0h60m20 0h60M0 120h40m40 0h60m20 0h80M0 200h60m20 0h100'/%3E%3Ccircle cx='40' cy='40' r='2' fill='%2322d3ee' fill-opacity='0.45'/%3E%3Ccircle cx='120' cy='120' r='2' fill='%2360a5fa' fill-opacity='0.40'/%3E%3Ccircle cx='200' cy='40' r='2' fill='%238b5cf6' fill-opacity='0.40'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 240px 240px;
-  background-repeat: repeat;
-  filter: blur(.15px);
-}
-
-/* Partículas suaves (puntos de luz) */
-.cyber-bg.tech .particles{
-  position:absolute; inset:0; pointer-events:none;
-  background:
-    radial-gradient(circle 2px at 10% 20%, rgba(96,165,250,.25), transparent 40%),
-    radial-gradient(circle 2px at 80% 15%, rgba(34,211,238,.25), transparent 40%),
-    radial-gradient(circle 2px at 60% 80%, rgba(139,92,246,.22), transparent 40%),
-    radial-gradient(circle 2px at 30% 60%, rgba(96,165,250,.20), transparent 40%);
-  opacity:.55;
-}
 @media (prefers-reduced-motion: no-preference){
+  /* pulso más lento y corto */
   .cyber-bg.animated{ animation: bgPulse 18s ease-in-out infinite alternate; }
   @keyframes bgPulse{ from{ transform:scale(1)} to{ transform:scale(1.06)} }
-
-  /* parpadeo lento y sutil */
-  .cyber-bg.tech .particles{ animation: twinkle 4.8s ease-in-out infinite alternate; }
-  @keyframes twinkle{
-    from{ opacity:.45; filter:brightness(.95) }
-    to  { opacity:.60; filter:brightness(1.05) }
-  }
 }
 
-/* =========================================================
-   TARJETA
-   ========================================================= */
+/* ===== Contenedor de autenticación ===== */
 .auth-wrap{ position:relative; z-index:1; display:grid; place-items:center; min-height:100dvh; padding: 18px; }
 .card.auth-card{
   width:min(100%, 720px);
@@ -97,10 +64,10 @@
   border:1px solid var(--border);
   border-radius: var(--r);
   padding: clamp(18px, 2.8vw, 30px);
-  box-shadow: 0 0 0 1px rgba(34,211,238,.12), 0 22px 48px rgba(0,0,0,.45);
+  box-shadow: 0 0 0 1px rgba(34,211,238,.12), 0 22px 48px rgba(0,0,0,.45); /* menos intensa */
   position:relative;
 }
-/* “Sheen” sutil al hover */
+/* “Sheen” (destello) sutil */
 .card.auth-card::before{
   content:""; position:absolute; inset:-2px; border-radius: inherit; pointer-events:none;
   background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.05) 50%, transparent 70%);
@@ -110,7 +77,8 @@
   .card.auth-card:hover::before{ animation: sheen 1.6s ease; }
   @keyframes sheen{ to{ transform: translateX(120%) } }
 }
-/* Borde neon suave */
+
+/* Borde neon interior/exterior (SUAVE) */
 .neon{
   box-shadow:
     0 0 0 1px rgba(34,211,238,.14),
@@ -119,74 +87,79 @@
     inset 0 0 0 1px rgba(255,255,255,.02);
 }
 
-/* =========================================================
-   ENCABEZADO + LOGO con MARCO LED PRO
-   ========================================================= */
+/* ===== Encabezado + Logo con MARCO LED (SUAVE) ===== */
 .brand-header{ text-align:center; margin-top:-2px; margin-bottom:12px; }
 .heroTitle { font-size: clamp(22px, 3.6vw, 32px); line-height:1.15; margin: 10px 0 6px }
 .heroSub   { font-size: clamp(15px, 2.3vw, 18px); color: var(--muted) }
 
-/* Marco LED: halo + LEDs esquinas + rim interior */
-.logo-frame{ display:inline-grid; place-items:center; padding:16px; border-radius: 20px; position:relative;
-  background: radial-gradient(160px 100px at 50% 0%, rgba(255,255,255,.04), transparent 45%);
+/* Marco LED: borde y esquinas suavizadas */
+.logo-frame{
+  display:inline-grid; place-items:center; padding:16px; border-radius: 20px; position:relative;
+  background: radial-gradient(150px 90px at 50% 0%, rgba(255,255,255,.04), transparent 45%);
   border: 1px solid rgba(96,165,250,.20);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.02), 0 10px 34px rgba(0,0,0,.30);
 }
-.logo-frame.led::before{
+.logo-frame::before{
   content:""; position:absolute; inset:-2px; border-radius: inherit;
   background: conic-gradient(from 0deg, var(--cyan), var(--blue), var(--violet), var(--cyan));
-  filter: blur(9px); opacity:.30; padding:2px;
+  filter: blur(9px); opacity:.30; /* menos brillo */
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask-composite: exclude;
+  padding:2px;
 }
-.logo-frame.led::after{
-  content:""; position:absolute; inset:3px; border-radius: inherit;
-  border: 1px solid rgba(255,255,255,.05); /* rim interior tenue */
-}
-.logo-frame.led .corners{ /* LEDs de esquinas */
-  position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+.logo-frame::after{
+  content:""; position:absolute; inset:0; border-radius:inherit;
   background:
-    radial-gradient(10px 10px at 8% 12%,  rgba(34,211,238,.55), transparent 40%),
-    radial-gradient(10px 10px at 92% 12%, rgba(96,165,250,.55), transparent 40%),
-    radial-gradient(10px 10px at 8% 88%,  rgba(139,92,246,.55), transparent 40%),
-    radial-gradient(10px 10px at 92% 88%, rgba(34,211,238,.55), transparent 40%);
-  opacity:.45;
-}
-.logo-frame.pro .scanline{
-  position:absolute; left:6%; right:6%; top:10%;
-  height:2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.32), transparent);
-  opacity:.22;
+    radial-gradient(10px 10px at 8% 12%,  rgba(34,211,238,.6), transparent 40%),
+    radial-gradient(10px 10px at 92% 12%, rgba(96,165,250,.6), transparent 40%),
+    radial-gradient(10px 10px at 8% 88%,  rgba(139,92,246,.6), transparent 40%),
+    radial-gradient(10px 10px at 92% 88%, rgba(34,211,238,.6), transparent 40%);
+  opacity:.45; pointer-events:none; /* LEDs más sutiles */
 }
 @media (prefers-reduced-motion: no-preference){
-  .logo-frame.pro{ animation: frameGlow 7.5s ease-in-out infinite alternate; }
+  .logo-frame{ animation: frameGlow 7.5s ease-in-out infinite alternate; }
   @keyframes frameGlow{
-    0%{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.02), 0 10px 34px rgba(0,0,0,.30), 0 0 14px rgba(34,211,238,.16) }
-    100%{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.02), 0 10px 34px rgba(0,0,0,.30), 0 0 20px rgba(96,165,250,.20) }
+    0%{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.02), 0 10px 34px rgba(0,0,0,.30), 0 0 14px rgba(34,211,238,.18) }
+    100%{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.02), 0 10px 34px rgba(0,0,0,.30), 0 0 20px rgba(96,165,250,.22) }
   }
 }
+
 .brand-logo{
-  height: clamp(var(--logo-min), 12vw, var(--logo-max));  /* máx 180px */
+  height: clamp(var(--logo-min), 12vw, var(--logo-max)); /* máx 180px */
   filter: drop-shadow(0 4px 18px rgba(34,211,238,.22));
 }
 .brand-logo.sm{
   height: clamp(calc(var(--logo-min) - 8px), 10vw, calc(var(--logo-max) - 18px));
 }
 @media (prefers-reduced-motion: no-preference){
-  .brand-logo.pulse{ animation: logoPulse 4s ease-in-out infinite; }
+  .brand-logo.pulse{ animation: logoPulse 4s ease-in-out infinite; } /* más lenta */
   @keyframes logoPulse{
     0%,100%{ filter: drop-shadow(0 0 6px rgba(34,211,238,.55)) }
     50%   { filter: drop-shadow(0 0 12px rgba(96,165,250,.65)) }
   }
 }
 
-/* =========================================================
-   LAYOUT FORM / CONTROLES
-   ========================================================= */
+/* Scanline más discreta */
+.logo-frame .scanline{
+  position:absolute; left:6%; right:6%; top:10%;
+  height:2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+  opacity:.25;
+}
+@media (prefers-reduced-motion: no-preference){
+  .logo-frame .scanline{ animation: scan 2.6s linear infinite; }
+  @keyframes scan{
+    from{ transform: translateY(0) }
+    to  { transform: translateY(120px) }
+  }
+}
+
+/* ===== Disposición general ===== */
 .grid-btns{ display:grid; gap:12px; margin-top:16px }
 .form-grid{ display:grid; gap:12px; margin-top:12px }
 .row-gap{ display:flex; gap:8px; align-items:center }
 .links-row{ justify-content:center; gap:10px; flex-wrap:wrap; display:flex }
 
+/* ===== Inputs/Chips ===== */
 .input{
   width:100%; background:#0b1a38; color:var(--text);
   border:1px solid var(--border); border-radius:12px;
@@ -208,7 +181,7 @@
 }
 .chip:hover{ transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,.22) }
 
-/* Botones */
+/* ===== Botones (glow SUAVE) ===== */
 .btn, button{
   min-height: var(--btn-h);
   font-size: var(--btn-fs);
@@ -234,13 +207,13 @@
   background: transparent; color: var(--text); border:1px solid var(--border);
 }
 
-/* Mensajes */
+/* Badges */
 .badge{ display:inline-flex; align-items:center; gap:6px; padding:10px 14px; border-radius:12px; font-size: 15px }
 .badge.center{ justify-content:center; width:100%; text-align:center }
 .state-info{ background: rgba(56,189,248,.12); color:#cfefff; border:1px solid rgba(56,189,248,.26) }
 .state-error{ background: rgba(239,68,68,.12); color:#ffc7c7; border:1px solid rgba(239,68,68,.26) }
 
-/* Motion seguro */
+/* Movimiento seguro */
 @media (prefers-reduced-motion: no-preference){
   .shake{ animation: shake .26s ease-in-out }
   @keyframes shake{
@@ -258,6 +231,75 @@
 }
 
 /* Accesibilidad */
-button, .btn, input{ min-height:48px }
+button, .btn, input{ min-height:48px } /* objetivo táctil */
 :focus-visible{ outline: 3px solid rgba(34,211,238,.42); outline-offset: 2px }
 .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip: rect(0,0,0,0); white-space:nowrap; border:0 }
+
+/* ===== Animación del grid estilo "paneles" (movimiento suave) ===== */
+@media (prefers-reduced-motion: no-preference){
+  /* mueve el grid diagonalmente y en bucle */
+  .cyber-bg.tech::before{
+    animation: gridDrift 40s linear infinite;
+  }
+}
+
+/* Forzar animación aunque el sistema tenga "reducir movimiento" */
+.motion-force .cyber-bg.animated{
+  animation: bgPulse 16s ease-in-out infinite alternate !important;
+}
+.motion-force .cyber-bg.tech::before{
+  animation: gridDrift 36s linear infinite !important;
+}
+.motion-force .cyber-bg.tech .particles{
+  animation: twinkle 4.8s ease-in-out infinite alternate !important;
+}
+
+/* desplazamiento continuo del grid (dos fondos: vertical y horizontal) */
+@keyframes gridDrift{
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 320px 0, 0 320px; }
+}
+
+/* ==== Lienzo del fondo tecnológico (paneles “Digimon”) ==== */
+.tech-canvas{
+  position: fixed;
+  inset: 0;
+  z-index: 0;           /* el contenido va arriba */
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none; /* no bloquea clicks */
+}
+
+/* Asegura que tu contenido quede por encima del canvas */
+.theme-cyber .auth-wrap,
+.theme-cyber .card.auth-card{
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== Mostrar SOLO el fondo animado (sin color liso) en páginas que lo pidan ===== */
+.bg-animated-only,
+.bg-animated-only.theme-cyber,
+.bg-animated-only.page-pad{
+  background: transparent !important;  /* quita el color de --bg */
+}
+
+/* si tu layout añade color en capas intermedias, las limpiamos dentro del scope */
+.bg-animated-only main,
+.bg-animated-only .page,
+.bg-animated-only .page-content,
+.bg-animated-only .content,
+.bg-animated-only .container,
+.bg-animated-only .site,
+.bg-animated-only .layout{
+  background: transparent !important;
+}
+
+/* Asegura el orden de capas: el fondo animado abajo, el contenido arriba */
+.bg-animated-only .cyber-bg{ z-index: 0; }
+.bg-animated-only .auth-wrap,
+.bg-animated-only .card,
+.bg-animated-only .page,
+.bg-animated-only main{
+  position: relative; z-index: 1;
+}
