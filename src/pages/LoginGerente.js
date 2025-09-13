@@ -1,9 +1,8 @@
-// src/pages/LoginGerente.js
 import React, { useEffect, useState } from "react";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
-import "../styles/auth-cyber.css"; // 👈 importa el tema
+import "../styles/auth-cyber.css";
 
 /* 🔐 Edita esta lista con los correos de gerentes autorizados */
 const GERENTES_ALLOW = new Set([
@@ -66,14 +65,28 @@ export default function LoginGerente() {
 
   return (
     <div className="theme-cyber page-pad">
-      <div className="cyber-bg" aria-hidden />
+      {/* Fondo tecnología */}
+      <div className="cyber-bg animated tech" aria-hidden>
+        <div className="circuit" />
+        <div className="particles" />
+      </div>
+
       <div className="auth-wrap">
         <div className="card auth-card neon">
           <header className="brand-header small">
-            <picture>
-              <source srcSet="/logo-login.svg" type="image/svg+xml" />
-              <img src="/login-logo.png" alt="Intérprete Ya — logo" className="brand-logo sm" />
-            </picture>
+            <div className="logo-frame led pro" aria-hidden="true">
+              <span className="scanline" />
+              <span className="corners" />
+              <picture>
+                <source srcSet="/gerente-logo.jpg" type="image/svg+xml" />
+                <img
+                  src="/gerente-logo.jpg"
+                  alt="Intérprete Ya — logo"
+                  className="brand-logo sm pulse"
+                />
+              </picture>
+            </div>
+
             <h2 className="heroTitle">Acceso Gerente <span aria-hidden>👩‍💼</span></h2>
             <p className="heroSub">Solo cuentas autorizadas.</p>
           </header>
@@ -113,7 +126,7 @@ export default function LoginGerente() {
               </button>
             </div>
 
-            <button type="submit" className="btn glow" disabled={loading}>
+            <button type="submit" className="btn lg glow" disabled={loading}>
               {loading ? "Ingresando..." : "Ingresar"}
             </button>
           </form>

@@ -1,15 +1,14 @@
-// src/pages/LoginUsuarioRut.js
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Page, Row, Button, Field, Ico } from "../components/ui";
 import { auth, db } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
-import "../styles/auth-cyber.css"; // 👈 importa el tema
+import "../styles/auth-cyber.css";
 
 const normalizaRut = (r) => (r || "").trim().replace(/\./g, "").toUpperCase();
 
-export default function LoginUsuarioRut() {
+export default function LoginInterpreteRut() {
   const nav = useNavigate();
   const [rut, setRut] = React.useState("");
   const [pass, setPass] = React.useState("");
@@ -33,12 +32,12 @@ export default function LoginUsuarioRut() {
       const q = query(
         collection(db, "users"),
         where("dni", "==", rutN),
-        where("role", "in", ["usuarioSordo", "usuario"]),
+        where("role", "in", ["interprete", "interpreteLSCh"]),
         limit(1)
       );
       const s = await getDocs(q);
       if (s.empty) {
-        setMsg("RUT no encontrado o no corresponde a Usuario.");
+        setMsg("RUT no encontrado o no corresponde a Intérprete.");
         return;
       }
       const u = s.docs[0].data();
@@ -51,7 +50,7 @@ export default function LoginUsuarioRut() {
         return;
       }
       await signInWithEmailAndPassword(auth, u.email, pass);
-      nav("/");
+      nav("/"); // o /panel-interprete
     } catch (err) {
       setMsg(err?.message || "No se pudo iniciar sesión.");
     } finally {
@@ -60,17 +59,29 @@ export default function LoginUsuarioRut() {
   };
 
   return (
-    <Page title="Ingresar — Usuario (RUT)" className="theme-cyber">
-      <div className="cyber-bg" aria-hidden />
+    <Page title="Ingresar — Intérprete (RUT)" className="theme-cyber">
+      <div className="cyber-bg animated tech" aria-hidden>
+        <div className="circuit" />
+        <div className="particles" />
+      </div>
+
       <div className="auth-wrap">
         <div className="card auth-card neon">
           <div className="brand-header">
-            <picture>
-              <source srcSet="/logo-login.svg" type="image/svg+xml" />
-              <img src="/logo.png" alt="Intérprete Ya — logo" className="brand-logo" />
-            </picture>
+            <div className="logo-frame led pro" aria-hidden="true">
+              <span className="scanline" />
+              <span className="corners" />
+              <picture>
+                <source srcSet="/interpreterut-logo.jpg" type="image/svg+xml" />
+                <img
+                  src="/interpreterut-logo.jpg"
+                  alt="Intérprete Ya — logo"
+                  className="brand-logo pulse"
+                />
+              </picture>
+            </div>
             <h2 className="heroTitle">
-              Usuario — Acceso con RUT <span aria-hidden>🧏🏻</span>
+              Intérprete — Acceso con RUT <span aria-hidden>🤟🏼</span>
             </h2>
             <div className="heroSub">Ingresa tus credenciales</div>
           </div>
@@ -109,7 +120,7 @@ export default function LoginUsuarioRut() {
               hint="Mínimo 6 caracteres"
             />
 
-            <label className="chip ghost">
+            <label className="chip ghost" style={{ width: "fit-content" }}>
               <input
                 type="checkbox"
                 checked={show}
@@ -126,8 +137,8 @@ export default function LoginUsuarioRut() {
             </Row>
 
             <Row className="links-row">
-              <Link className="chip" to="/recuperar">🔑 Recuperar</Link>
-              <Link className="chip" to="/login">↩️ Volver</Link>
+              <Link className="chip glow-chip" to="/recuperar">🔑 Recuperar</Link>
+              <Link className="chip glow-chip" to="/login">↩️ Volver</Link>
             </Row>
           </form>
 

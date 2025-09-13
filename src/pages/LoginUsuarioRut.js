@@ -1,10 +1,10 @@
-// src/pages/LoginUsuarioRut.js
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Page, Row, Button, Field, Ico } from "../components/ui";
 import { auth, db } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
+import "../styles/auth-cyber.css";
 
 const normalizaRut = (r) => (r || "").trim().replace(/\./g, "").toUpperCase();
 
@@ -59,29 +59,40 @@ export default function LoginUsuarioRut() {
   };
 
   return (
-    <Page title="Ingresar — Usuario (RUT)">
-      <div className="auth-box" style={{ padding: 12 }}>
-        <div className="card auth-card" style={{ maxWidth: 560, margin: "0 auto", padding: 16 }}>
-          <div style={{ textAlign: "center", marginTop: -2 }}>
-            <img src="/logo.png" alt="InterpreteYa" style={{ maxHeight: 64 }} />
-            <h2 className="heroTitle" style={{ marginTop: 8 }}>
+    <Page title="Ingresar — Usuario (RUT)" className="theme-cyber">
+      <div className="cyber-bg animated tech" aria-hidden>
+        <div className="circuit" />
+        <div className="particles" />
+      </div>
+
+      <div className="auth-wrap">
+        <div className="card auth-card neon">
+          <div className="brand-header">
+            <div className="logo-frame led pro" aria-hidden="true">
+              <span className="scanline" />
+              <span className="corners" />
+              <picture>
+                <source srcSet="/usuariorut-logo.jpg" type="image/svg+xml" />
+                <img
+                  src="/usuariorut-logo.jpg"
+                  alt="Intérprete Ya — logo"
+                  className="brand-logo pulse"
+                />
+              </picture>
+            </div>
+            <h2 className="heroTitle">
               Usuario — Acceso con RUT <span aria-hidden>🧏🏻</span>
             </h2>
             <div className="heroSub">Ingresa tus credenciales</div>
           </div>
 
           {msg && (
-            <div
-              role="alert"
-              aria-live="assertive"
-              className="badge state-error"
-              style={{ marginTop: 12, width: "100%", justifyContent: "center", textAlign: "center" }}
-            >
+            <div role="alert" aria-live="assertive" className="badge state-error shake center">
               {msg}
             </div>
           )}
 
-          <form onSubmit={ingresar} style={{ display: "grid", gap: 12, marginTop: 12 }}>
+          <form onSubmit={ingresar} className="form-grid">
             <Field
               label="RUT"
               type="text"
@@ -109,7 +120,7 @@ export default function LoginUsuarioRut() {
               hint="Mínimo 6 caracteres"
             />
 
-            <label className="badge" style={{ width: "fit-content" }}>
+            <label className="chip ghost" style={{ width: "fit-content" }}>
               <input
                 type="checkbox"
                 checked={show}
@@ -120,19 +131,19 @@ export default function LoginUsuarioRut() {
             </label>
 
             <Row>
-              <Button type="submit" full className="lg" iconRight={Ico.Next} disabled={loading}>
+              <Button type="submit" full className="lg glow" iconRight={Ico.Next} disabled={loading}>
                 {loading ? "Ingresando..." : "Ingresar"}
               </Button>
             </Row>
 
-            <Row style={{ justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
-              <Link className="badge" to="/recuperar">🔑 Recuperar</Link>
-              <Link className="badge" to="/login">↩️ Volver</Link>
+            <Row className="links-row">
+              <Link className="chip glow-chip" to="/recuperar">🔑 Recuperar</Link>
+              <Link className="chip glow-chip" to="/login">↩️ Volver</Link>
             </Row>
           </form>
 
-          <div className="emoji-strip" aria-hidden style={{ marginTop: 10, textAlign: "center", fontSize: 18 }}>
-            🧏🏻‍♀️ 🧏🏻‍♂️ 🤟🏼 
+          <div className="emoji-strip" aria-hidden>
+            🧏🏻‍♀️ 🧏🏻‍♂️ 🤟🏼 🇨🇱
           </div>
         </div>
       </div>
