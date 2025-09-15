@@ -1,137 +1,27 @@
-// src/pages/CuentasPendientes.js
+// src/pages/CuentaPendiente.js
 import React from "react";
-import { auth, db } from "../firebase";
-import {
-  collection, query, where, limit, getDocs, doc, updateDoc,
-  serverTimestamp
-} from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+import "../styles/auth-cyber.css";
 
-function Row({ label, value }) {
-  return <div className="badge" style={{marginRight:8}}>{label}: <b>{value || "-"}</b></div>;
-}
-
-export default function CuentasPendientes(){
-  const [items, setItems] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-  const [editing, setEditing] = React.useState(null); // id en edición
-  const [form, setForm] = React.useState({ displayName:"", dni:"", profesion:"" });
-  const me = auth.currentUser;
-  const nav = useNavigate();
-
-  async function cargar(){
-    setLoading(true);
-    const q = query(collection(db, "users"), where("estadoCuenta", "==", "pendiente"), limit(100));
-    const s = await getDocs(q);
-    setItems(s.docs.map(d => ({ id: d.id, ...d.data() })));
-    setLoading(false);
-  }
-  React.useEffect(()=>{ cargar(); }, []);
-
-  async function aprobar(id){
-    await updateDoc(doc(db, "users", id), {
-      estadoCuenta: "aprobado",
-      aprobado: true,
-      aprobadoEn: serverTimestamp(),
-      aprobadoPorUid: me?.uid || null,
-      aprobadoPorEmail: me?.email || null
-    });
-    await cargar();
-  }
-  async function rechazar(id){
-    await updateDoc(doc(db, "users", id), {
-      estadoCuenta: "rechazado",
-      aprobado: false,
-      rechazadoEn: serverTimestamp(),
-      rechazadoPorUid: me?.uid || null,
-      rechazadoPorEmail: me?.email || null
-    });
-    await cargar();
-  }
-  async function bloquear(id){
-    await updateDoc(doc(db, "users", id), {
-      bloqueado: true,
-      bloqueadoEn: serverTimestamp(),
-      bloqueadoPorUid: me?.uid || null
-    });
-    await cargar();
-    nav("/lista-bloqueos");
-  }
-  async function desbloquear(id){
-    await updateDoc(doc(db, "users", id), {
-      bloqueado: false,
-      desbloqueadoEn: serverTimestamp(),
-      desbloqueadoPorUid: me?.uid || null
-    });
-    await cargar();
-  }
-  function onEdit(u){
-    setEditing(u.id);
-    setForm({
-      displayName: u.displayName || "",
-      dni: u.dni || "",
-      profesion: u.profesion || ""
-    });
-  }
-  async function guardarEdicion(){
-    const { displayName, dni, profesion } = form;
-    await updateDoc(doc(db, "users", editing), { displayName, dni, profesion, actualizadoEn: serverTimestamp() });
-    setEditing(null);
-    await cargar();
-  }
-
+export default function CuentaPendiente() {
   return (
-    <div className="container">
-      <h1 className="heroTitle">Gerente · Cuentas pendientes</h1>
-      <p className="heroSub">Aprueba, rechaza, bloquea o edita los registros recientes.</p>
+    <div className="theme-cyber page-pad">
+      <div className="cyber-bg animated tech" aria-hidden>
+        <div className="circuit" />
+        <div className="particles" />
+      </div>
 
-      {loading && <div className="badge" style={{marginTop:12}}>Cargando…</div>}
-      {!loading && items.length === 0 && (
-        <div className="badge" style={{marginTop:12}}>No hay solicitudes pendientes.</div>
-      )}
+      <div className="container">
+        <div className="card auth-card neon" role="status" aria-live="polite">
+          <h2 className="heroTitle">Tu cuenta está en revisión 🤝</h2>
+          <p className="heroSub">
+            La aprobación puede tardar <b>3–4 días hábiles</b>. Te avisaremos por WhatsApp o correo.
+          </p>
 
-      <div className="grid3" style={{marginTop:12}}>
-        {items.map(u => (
-          <div key={u.id} className="card white">
-            <h3 className="card-title" style={{marginTop:0}}>{u.displayName || u.email}</h3>
-            <div style={{display:"flex", flexWrap:"wrap", gap:8, marginTop:8}}>
-              <Row label="Email" value={u.email}/>
-              <Row label="RUT/DNI" value={u.dni}/>
-              <Row label="Profesión" value={u.profesion}/>
-              <Row label="Estado" value={u.estadoCuenta}/>
-              <Row label="Bloqueado" value={u.bloqueado ? "Sí" : "No"}/>
-            </div>
-
-            {/* Botones */}
-            <div className="row" style={{marginTop:12, gap:8, justifyContent:"flex-end", flexWrap:"wrap"}}>
-              <button className="btn secondary" onClick={()=>rechazar(u.id)}>❌ No aprobado</button>
-              {!u.bloqueado ? (
-                <button className="btn secondary" onClick={()=>bloquear(u.id)}>🚫 Bloquear</button>
-              ) : (
-                <button className="btn secondary" onClick={()=>desbloquear(u.id)}>✅ Desbloquear</button>
-              )}
-              <button className="btn secondary" onClick={()=>onEdit(u)}>✏️ Editar</button>
-              <button className="btn" onClick={()=>aprobar(u.id)}>✅ Confirmar</button>
-            </div>
-
-            {/* Edición inline */}
-            {editing === u.id && (
-              <div className="divider" style={{marginTop:12}}>
-                <label className="label">Nombre</label>
-                <input className="input" value={form.displayName} onChange={e=>setForm(f=>({...f, displayName:e.target.value}))}/>
-                <label className="label">RUT/DNI</label>
-                <input className="input" value={form.dni} onChange={e=>setForm(f=>({...f, dni:e.target.value}))}/>
-                <label className="label">Profesión</label>
-                <input className="input" value={form.profesion} onChange={e=>setForm(f=>({...f, profesion:e.target.value}))}/>
-
-                <div className="row" style={{gap:8, marginTop:10}}>
-                  <button className="btn secondary" onClick={()=>setEditing(null)}>Cancelar</button>
-                  <button className="btn" onClick={guardarEdicion}>Guardar</button>
-                </div>
-              </div>
-            )}
+          <div className="row" style={{ gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+            <a className="btn secondary" href="/">🏠 Volver al inicio</a>
+            <a className="btn" href="/reporte" aria-label="Reportar problema o suplantación">🚨 Reportar un problema</a>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

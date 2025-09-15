@@ -1,13 +1,14 @@
+// src/pages/LoginGerente.js
 import React, { useEffect, useState } from "react";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import "../styles/auth-cyber.css";
 
-/* 🔐 Edita esta lista con los correos de gerentes autorizados */
+/* 🔐 Lista blanca de gerentes autorizados */
 const GERENTES_ALLOW = new Set([
   "gerentesebastian@admin.com",
-  "gerenteandres@admin.com",
+  "gerenteandre@admin.com", // 👈 corregido (antes "andres")
 ]);
 
 export default function LoginGerente() {
@@ -21,7 +22,7 @@ export default function LoginGerente() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       if (u && GERENTES_ALLOW.has((u.email || "").toLowerCase())) {
-        navigate("/admin-gerente", { replace: true });
+        navigate("/gerente", { replace: true }); // ✅ a la ruta correcta
       }
     });
     return () => unsub();
@@ -51,7 +52,7 @@ export default function LoginGerente() {
     try {
       const res = await signInWithEmailAndPassword(auth, mail, password);
       if (GERENTES_ALLOW.has((res.user.email || "").toLowerCase())) {
-        navigate("/admin-gerente", { replace: true });
+        navigate("/gerente", { replace: true }); // ✅ a Gerencia
       } else {
         setError("Esta cuenta no tiene permiso de Gerente.");
         await signOut(auth);
@@ -65,7 +66,6 @@ export default function LoginGerente() {
 
   return (
     <div className="theme-cyber page-pad">
-      {/* Fondo tecnología */}
       <div className="cyber-bg animated tech" aria-hidden>
         <div className="circuit" />
         <div className="particles" />
@@ -79,14 +79,9 @@ export default function LoginGerente() {
               <span className="corners" />
               <picture>
                 <source srcSet="/gerente-logo.jpg" type="image/svg+xml" />
-                <img
-                  src="/gerente-logo.jpg"
-                  alt="Intérprete Ya — logo"
-                  className="brand-logo sm pulse"
-                />
+                <img src="/gerente-logo.jpg" alt="Intérprete Ya — logo" className="brand-logo sm pulse" />
               </picture>
             </div>
-
             <h2 className="heroTitle">Acceso Gerente <span aria-hidden>👩‍💼</span></h2>
             <p className="heroSub">Solo cuentas autorizadas.</p>
           </header>

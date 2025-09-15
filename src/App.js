@@ -6,24 +6,13 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import "./theme.css";
 import {
-  FaAmbulance,
-  FaUsers,
-  FaCalendarAlt,
-  FaVideo,
-  FaSignInAlt,
-  FaSignOutAlt,
-  FaUser,
-  FaBars,
-  FaTimes,
-  FaRegNewspaper,
-  FaUserPlus
+  FaAmbulance, FaUsers, FaCalendarAlt, FaVideo, FaSignInAlt, FaSignOutAlt,
+  FaUser, FaBars, FaTimes, FaRegNewspaper, FaUserPlus, FaShieldAlt, FaListOl
 } from "react-icons/fa";
 
-/* UI común */
 import { Protected } from "./components/ui";
 import DevGerenteSwitch from "./components/DevGerenteSwitch";
 
-/* Páginas base */
 import Home from "./pages/Home";
 import Home2 from "./pages/Home2";
 import Login from "./pages/Login";
@@ -41,8 +30,9 @@ import Videollamada from "./pages/Videollamada";
 import Intro from "./pages/Intro";
 import LoginGerente from "./pages/LoginGerente";
 
-/* SINGULAR: estado de cuenta */
-import CuentaPendiente from "./pages/CuentaPendiente";
+/* ✅ Páginas corregidas */
+import CuentaPendiente from "./pages/CuentaPendiente";        // usuario esperando
+import CuentasPendientes from "./pages/CuentasPendientes";    // gerente lista
 
 /* Logins por RUT */
 import LoginUsuarioRut from "./pages/LoginUsuarioRut";
@@ -51,14 +41,17 @@ import LoginInterpreteRut from "./pages/LoginInterpreteRut";
 /* Hook de rol */
 import useUserRole from "./hooks/useUserRole";
 
-/* Helpers de UI */
 const Page = ({ title, children }) => (
-  <div className="container">
-    <div className="card"><h2>{title}</h2>{children}</div>
-  </div>
+  <div className="container"><div className="card"><h2>{title}</h2>{children}</div></div>
 );
 function Recuperar() { return <Page title="Recuperar Contraseña" />; }
 function ReportePage() { return <Page title="Reportar Problemas / Suplantación" />; }
+
+/* 🔐 misma lista blanca de LoginGerente */
+const GERENTES_ALLOW = new Set([
+  "gerentesebastian@admin.com",
+  "gerenteandre@admin.com",
+]);
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -68,7 +61,6 @@ export default function App() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // ======== Auth ========
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
@@ -99,7 +91,10 @@ export default function App() {
 
   const salir = async () => { await signOut(auth); nav("/"); };
 
-  // ======== Guardias ========
+  const isGerente = !!user && (
+    role === "gerente" || GERENTES_ALLOW.has((user?.email || "").toLowerCase())
+  );
+
   const Approved = ({ children }) => {
     if (!user) return <Navigate to="/login" replace />;
     if (!userDoc) return <Page title="Verificando"><div className="badge">Cargando…</div></Page>;
@@ -116,15 +111,12 @@ export default function App() {
     return children;
   };
 
-  // ======== Drawer (móvil) ========
-  // Bloquear scroll al abrir
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = drawerOpen ? "hidden" : prev || "";
     return () => { document.body.style.overflow = prev || ""; };
   }, [drawerOpen]);
 
-  // Cerrar con ESC
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") setDrawerOpen(false); };
     window.addEventListener("keydown", onKey);
@@ -143,24 +135,17 @@ export default function App() {
             <span className="brand-text">InterpreteYa <span aria-hidden="true">🤟</span></span>
           </Link>
 
-          {/* Botón hamburguesa (solo móvil) */}
-          <button
-            className="btn icon mobile-toggle"
+          <button className="btn icon mobile-toggle"
             aria-label={drawerOpen ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={drawerOpen ? "true" : "false"}
-            onClick={() => setDrawerOpen(v => !v)}
-          >
+            onClick={() => setDrawerOpen(v => !v)}>
             <FaBars />
           </button>
 
-          {/* Navegación de escritorio */}
           <nav className="top-nav" aria-label="Principal">
-            <NavLink
-              to="/"
-              state={{ openRegister: true, regTab: "user" }}
+            <NavLink to="/" state={{ openRegister: true, regTab: "user" }}
               className={({ isActive }) => `top-link ${isActive ? "active" : ""}`}
-              onClick={closeDrawer}
-            >
+              onClick={closeDrawer}>
               <FaUserPlus /> Registro
             </NavLink>
 
@@ -176,18 +161,26 @@ export default function App() {
               <FaAmbulance /> Emergencia 24/7
             </NavLink>
 
+            {/* 🔐 Menú Gerente */}
+            {isGerente && (
+              <>
+                <NavLink to="/gerente" className={({ isActive }) => `top-link ${isActive ? "active" : ""}`} onClick={closeDrawer}>
+                  <FaShieldAlt /> Gerencia
+                </NavLink>
+                <NavLink to="/gerente/cuentas-pendientes" className={({ isActive }) => `top-link ${isActive ? "active" : ""}`} onClick={closeDrawer}>
+                  <FaListOl /> Cuentas pendientes
+                </NavLink>
+              </>
+            )}
+
             {!user ? (
               <NavLink to="/login" className="top-cta" onClick={closeDrawer}>
                 <FaSignInAlt /> Ingresar
               </NavLink>
             ) : (
               <>
-                <span className="badge compact">
-                  <FaUser /> {userDoc?.displayName || user?.email}
-                </span>
-                <button className="top-cta" onClick={salir}>
-                  <FaSignOutAlt /> Salir
-                </button>
+                <span className="badge compact"><FaUser /> {userDoc?.displayName || user?.email}</span>
+                <button className="top-cta" onClick={salir}><FaSignOutAlt /> Salir</button>
               </>
             )}
           </nav>
@@ -197,54 +190,34 @@ export default function App() {
       {/* ===== Drawer móvil ===== */}
       {drawerOpen && (
         <div className="drawer-backdrop" role="dialog" aria-modal="true" onClick={closeDrawer}>
-          <aside
-            className="drawer"
-            aria-label="Menú"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <aside className="drawer" aria-label="Menú" onClick={(e) => e.stopPropagation()}>
             <div className="drawer-head">
               <span className="drawer-title">Menú</span>
               <button className="icon-btn" aria-label="Cerrar" onClick={closeDrawer}><FaTimes /></button>
             </div>
 
             <nav className="drawer-list">
-              <NavLink to="/" onClick={closeDrawer} className="drawer-link">
-                Inicio
-              </NavLink>
+              <NavLink to="/" onClick={closeDrawer} className="drawer-link">Inicio</NavLink>
+              <NavLink to="/" state={{ openRegister: true, regTab: "user" }} onClick={closeDrawer} className="drawer-link">Registro</NavLink>
+              <NavLink to="/noticias" onClick={closeDrawer} className="drawer-link">Noticias</NavLink>
+              <NavLink to="/interpretes" onClick={closeDrawer} className="drawer-link">Intérpretes</NavLink>
+              <NavLink to="/emergencia" onClick={closeDrawer} className="drawer-link danger">Emergencia 24/7</NavLink>
 
-              <NavLink
-                to="/"
-                state={{ openRegister: true, regTab: "user" }}
-                onClick={closeDrawer}
-                className="drawer-link"
-              >
-                Registro
-              </NavLink>
-
-              <NavLink to="/noticias" onClick={closeDrawer} className="drawer-link">
-                Noticias
-              </NavLink>
-
-              <NavLink to="/interpretes" onClick={closeDrawer} className="drawer-link">
-                Intérpretes
-              </NavLink>
-
-              <NavLink to="/emergencia" onClick={closeDrawer} className="drawer-link danger">
-                Emergencia 24/7
-              </NavLink>
+              {isGerente && (
+                <>
+                  <div className="drawer-divider" />
+                  <NavLink to="/gerente" onClick={closeDrawer} className="drawer-link">Gerencia</NavLink>
+                  <NavLink to="/gerente/cuentas-pendientes" onClick={closeDrawer} className="drawer-link">Cuentas pendientes</NavLink>
+                </>
+              )}
 
               <div className="drawer-divider" />
-
               {!user ? (
-                <NavLink to="/login" onClick={closeDrawer} className="drawer-link primary">
-                  Ingresar
-                </NavLink>
+                <NavLink to="/login" onClick={closeDrawer} className="drawer-link primary">Ingresar</NavLink>
               ) : (
                 <>
                   <span className="drawer-user"><FaUser /> {userDoc?.displayName || user?.email}</span>
-                  <button className="drawer-link primary" onClick={() => { closeDrawer(); salir(); }}>
-                    Salir
-                  </button>
+                  <button className="drawer-link primary" onClick={() => { closeDrawer(); salir(); }}>Salir</button>
                 </>
               )}
             </nav>
@@ -264,7 +237,7 @@ export default function App() {
         <Route path="/login-interprete" element={<LoginInterpreteRut />} />
         <Route path="/login-gerente" element={<LoginGerente />} />
 
-        {/* Página de estado pendiente (SINGULAR) */}
+        {/* Estado pendiente (usuario) */}
         <Route path="/pendiente" element={<CuentaPendiente />} />
 
         <Route path="/recuperar" element={<Recuperar />} />
@@ -286,7 +259,15 @@ export default function App() {
           path="/gerente"
           element={
             <Protected user={user}>
-              {role === "gerente" ? <AdminGerente user={user} role={role} /> : <Navigate to="/" replace />}
+              {isGerente ? <AdminGerente user={user} role={role} /> : <Navigate to="/" replace />}
+            </Protected>
+          }
+        />
+        <Route
+          path="/gerente/cuentas-pendientes"
+          element={
+            <Protected user={user}>
+              {isGerente ? <CuentasPendientes /> : <Navigate to="/" replace />}
             </Protected>
           }
         />
@@ -313,11 +294,8 @@ export default function App() {
           </>
         ) : (
           <>
-            <NavLink
-              to="/"
-              state={{ openRegister: true, regTab: "user" }}
-              className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}
-            >
+            <NavLink to="/" state={{ openRegister: true, regTab: "user" }}
+              className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}>
               <FaUserPlus /><span>Registro</span>
             </NavLink>
             <NavLink to="/emergencia" className={({ isActive }) => `bn-item danger ${isActive ? "active" : ""}`}>
